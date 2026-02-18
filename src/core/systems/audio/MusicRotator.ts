@@ -22,6 +22,11 @@ export class MusicRotator<TVibe extends string> {
 
 	}
 
+	/**
+	 * Register music track to specified vibe (environment or state).
+	 * @param vibe
+	 * @param music
+	 */
 	register(vibe:TVibe, music:MusicTrack):void {
 		const tracksAtVibe = this._vibes.get(vibe) || { tracks: [] as MusicTrack[], trackIndex: 0 };
 

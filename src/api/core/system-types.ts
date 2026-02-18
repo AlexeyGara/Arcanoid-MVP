@@ -14,6 +14,10 @@ import type {
 	ISoundManager,
 	IVolumeManager
 }                                 from "./audio-types";
+import type {
+	KeyInputManager,
+	TouchInputManager
+}                                 from "./input-types";
 
 export type AppSystem =
 	CanBePaused & {
@@ -41,7 +45,7 @@ export interface IPauseManager extends AppSystem {
 
 type ReleaseSystemCallback = () => void;
 
-export type SystemsProvider = {
+export type SystemsProvider = Readonly<{
 
 	pauseManager:{
 		/**
@@ -50,8 +54,20 @@ export type SystemsProvider = {
 		 * @param masterPauseManager Specify a master pause manager. Will be used a global pause manager if not set.
 		 * @return Release callback.
 		 */
-		provide:(setName:string, masterPauseManager?:IPauseManager) => [
+		readonly provide:(setName:string, masterPauseManager?:IPauseManager) => [
 			IPauseManager, ReleaseSystemCallback
+		];
+	};
+
+	keyInputManager:{
+		readonly provide:(setName:string, pauseManager?:IPauseManager) => [
+			KeyInputManager, ReleaseSystemCallback
+		];
+	};
+
+	touchInputManager:{
+		readonly provide:(setName:string, pauseManager?:IPauseManager) => [
+			TouchInputManager, ReleaseSystemCallback
 		];
 	};
 
@@ -62,24 +78,24 @@ export type SystemsProvider = {
 		 * @param pauseManager Specify a custom pause manager. Will be used a global pause manager if not set.
 		 * @return Release callback.
 		 */
-		provide:(setName:string, pauseManager?:IPauseManager) => [
+		readonly provide:(setName:string, pauseManager?:IPauseManager) => [
 			IActionManager, ReleaseSystemCallback
 		];
 	};
 
 	animationsManager:{
-		provide:(setName:string, pauseManager?:IPauseManager) => [
+		readonly provide:(setName:string, pauseManager?:IPauseManager) => [
 			IAnimationManager, ReleaseSystemCallback
 		];
 	};
 
 	soundsManager:{
-		provide:(setName:string, pauseManager?:IPauseManager) => [
+		readonly provide:(setName:string, pauseManager?:IPauseManager) => [
 			[ISoundManager, IVolumeManager], ReleaseSystemCallback
 		];
 	};
 
 	musicManager:{
-		provide:() => [IMusicManager, IVolumeManager];
+		readonly provide:() => [IMusicManager, IVolumeManager];
 	};
-}
+}>

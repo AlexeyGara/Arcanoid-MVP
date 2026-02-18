@@ -10,9 +10,11 @@
 export class StateMachineTransitionError extends Error {
 
 	readonly nextStateId:STATEidBase;
+	readonly cause:unknown;
 
-	constructor(nextStateId:STATEidBase, message?:string) {
+	constructor(nextStateId:STATEidBase, message?:string, originCause?:unknown) {
 		super(message);
 		this.nextStateId = nextStateId;
+		this.cause       = originCause;
 	}
 }

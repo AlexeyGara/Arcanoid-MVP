@@ -7,24 +7,29 @@
  * Last modified: 2026-02-18 17:44
  */
 
-import type { IGameLoopUpdater } from "@core-api/gameloop-types";
-import type { CanBeAddToScene }  from "@core-api/module-types";
+import type { ErrorEventsEmitter } from "@core-api/event-types";
+import type {
+	IGameLoopUpdatable,
+	IGameLoopUpdater
+}                                  from "@core-api/gameloop-types";
+import type { CanBeAddToScene }    from "@core-api/module-types";
+import type { ISceneImpl }         from "@core-api/scene-impl-types";
 import type {
 	ISceneHost,
 	IScenesManagerControlled
-}                                from "@core-api/scene-types";
+}                                  from "@core-api/scene-types";
 import type {
 	IResizable,
 	ResizeInfo
-}                                from "@core-api/service-types";
+}                                  from "@core-api/service-types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESceneStatus = {
-	NEW: 0,
+	NEW:        0,
 	PRELOADING: 1,
-	LOADED: 2,
-	CREATED: 3,
-	DESTROYED: -1
+	LOADED:     2,
+	CREATED:    3,
+	DESTROYED:  -1
 } as const;
 
 type ESceneStatus = typeof ESceneStatus[keyof typeof ESceneStatus];
@@ -32,94 +37,92 @@ type ESceneStatus = typeof ESceneStatus[keyof typeof ESceneStatus];
 export abstract class Scene<TSceneId extends SceneIdBase,
 	TSceneProps extends SceneIdPropsBase<TTargetLayerId>,
 	TTargetLayerId extends SceneLayersIdBase,
-	TSceneLayersId extends SceneLayersIdBase>
+	TSceneLayersId extends SceneLayersIdBase,
+	TSceneChildId extends SceneChildIdBase>
+
 	implements IScenesManagerControlled<TSceneId, TSceneProps, TTargetLayerId>,
-			   ISceneHost<TSceneLayersId>,
+			   ISceneHost<TSceneLayersId, TSceneChildId>,
 			   IResizable {
 
 	readonly sceneId:TSceneId;
 	readonly sceneProps:TSceneProps;
 
+	@final
 	get cacheable():boolean {
 		return this.sceneProps.cacheable || false;
 	}
 
+	@final
 	get targetLayerId():TTargetLayerId {
 		return this.sceneProps.targetRootLayer;
 	}
 
-	get destroyed() {
+	@final
+	get destroyed():boolean {
 		return this._status == ESceneStatus.DESTROYED;
 	}
 
-	private readonly _rootLayers:TSceneLayersId[];
-	private readonly _rootLayersStructure:RootLayersStructure<TSceneLayersId>;
-	private readonly _rootLayersAligner:INodeUIPosAligner;
 	private readonly _gameLoop:IGameLoopUpdater;
-	protected readonly errorEmitter:GlobalErrorEventsEmitter;
+	private readonly _sceneImpl:ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>;
+	protected readonly errorEmitter:ErrorEventsEmitter;
 	private _status:ESceneStatus = ESceneStatus.NEW;
 
 	protected constructor(
 		sceneId:TSceneId,
 		props:TSceneProps,
-		sceneLayers:RootLayersStructure<TSceneLayersId>,
 		gameLoop:IGameLoopUpdater,
-		assetsBundles:IAssetsBundle[],
-		nodeBuilder:INodesUIBuilder,
-		errorThrower:GlobalErrorEventsEmitter,
-		sceneLayersAligner:INodeUIPosAligner,
-		root?:IHaveChildrenNodeUI & IInteractiveNodeUI
+		sceneImpl:ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>,
+		errorThrower:ErrorEventsEmitter,
 	) {
-		this.onResize = this.onResize.bind(this);
-		this.sceneId = sceneId;
-		this.sceneProps = props;
-		this._gameLoop = gameLoop;
+		this.sceneId      = sceneId;
+		this.sceneProps   = props;
+		this._gameLoop    = gameLoop;
+		this._sceneImpl   = sceneImpl;
 		this.errorEmitter = errorThrower;
-		this.root = root || nodeBuilder.createContainerNode(this.sceneId);
-		this._rootLayersStructure = sceneLayers;
-		this._rootLayers = nodeBuilder.createRootLayers(sceneLayers, this.root);
-		this._rootLayersAligner = sceneLayersAligner;
-		this._assetsBundles = assetsBundles;
 	}
 
-	add(view:CanBeAddToScene<TSceneLayersId>):void {
-		const rootLayer = this._rootLayers.get(view.targetLayerId);
-		if(!rootLayer) {
-			this.errorEmitter.emitFatalErrorEvent(new Error(
-				`[Scene] cannot add view to layer '${view.targetLayerId}' of scene '${this.sceneId}' because layer not found!`));
+	@final
+	add(view:CanBeAddToScene<TSceneLayersId, TSceneChildId>):void {
+
+		if(this._sceneImpl.addToLayer(view.uniqueOwnId, view.targetLayerId)) {
 			return;
 		}
 
-		rootLayer.addChild(view.stage);
+		this.errorEmitter.emitFatalErrorEvent(new Error(
+			`[Scene] cannot add view '${view.uniqueOwnId}' to layer '${view.targetLayerId}' of scene '${this.sceneId}'!`));
 	}
 
-	remove(view:CanBeAddToScene<TSceneLayersId>):void {
-		const rootLayer = this._rootLayers.get(view.targetLayerId);
-		if(!rootLayer) {
-			//this._errorThrower.throwFatalErrorEvent(new Error(
-			logger.warn(
-				`[Scene] cannot remove view from layer '${view.targetLayerId}' of scene '${this.sceneId}' because layer not found!`
-			);
-			//);
-			//view.stage.removeFromParent();
+	@final
+	remove(view:CanBeAddToScene<TSceneLayersId, TSceneChildId>):void {
+
+		if(this._sceneImpl.removeFromLayer(view.uniqueOwnId, view.targetLayerId)) {
 			return;
 		}
 
-		rootLayer.removeChild(view.stage);
+		//this._errorThrower.throwFatalErrorEvent(new Error(
+		logger.warn(
+			`[Scene] cannot remove view '${view.uniqueOwnId}' from layer '${view.targetLayerId}' of scene '${this.sceneId}'!`
+		);
+		//);
+
+		this._sceneImpl.removeFromParent(view.uniqueOwnId);
 	}
 
+	@final
 	addToUpdateLoop(...updatableList:IGameLoopUpdatable[]):void {
 		for(const updatable of updatableList) {
 			this._gameLoop.add(updatable);
 		}
 	}
 
+	@final
 	removeFromUpdateLoop(...updatableList:IGameLoopUpdatable[]):void {
 		for(const updatable of updatableList) {
 			this._gameLoop.remove(updatable);
 		}
 	}
 
+	@final
 	async preload():Promise<boolean> {
 		if(this._status != ESceneStatus.NEW) {
 			return false;
@@ -127,7 +130,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 
 		this._status = ESceneStatus.PRELOADING;
 
-		const preloadSuccess = await this.doPreload();
+		const preloadSuccess = await this._sceneImpl.doPreload(this.onPreloadProgress?.bind(this));
 		if(preloadSuccess) {
 			this._status = ESceneStatus.LOADED;
 			return true;
@@ -137,72 +140,38 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		return false;
 	}
 
-	/** preload all required own resources, etc. before creating scene */
-	protected async doPreload():Promise<boolean> {
-		const waiters:Promise<boolean>[] = [];
-		for(const assetsBundle of this._assetsBundles) {
-			if(!assetsBundle.loaded) {
-				waiters.push(assetsBundle.load(this.onPreloadProgress?.bind(this)));
-			}
-		}
-		return Promise.all(waiters).then((success:boolean[]) => {
-			return success.length == 0 || success.indexOf(false) < 0;
-		});
-	}
-
 	protected onPreloadProgress?(progress:number):void;
 
+	@final
 	async create():Promise<void> {
 		if(this._status == ESceneStatus.LOADED) {
-			await this.doCreate();
+			await this._sceneImpl.doCreate();
 			this._status = ESceneStatus.CREATED;
 		}
 	}
 
-	/** setup scene for displaying, initial scene's first preview */
-	abstract doCreate():Promise<void>;
-
-	async destroy():Promise<void> {
+	@final
+	destroy():void {
 		if(this._status != ESceneStatus.DESTROYED) {
-			await this.doDestroy();
+			void this._sceneImpl.doDestroy();
 			this._status = ESceneStatus.DESTROYED;
 		}
 	}
 
-	/** unload all own resources, etc. */
-	protected async doDestroy():Promise<void> {
-		for(const layer of this._rootLayers.values()) {
-			this.root.removeChild(layer);
-			layer.dispose();
-		}
-		this._rootLayers.clear();
-
-		const waiters:Promise<void>[] = [];
-		for(const assetsBundle of this._assetsBundles) {
-			waiters.push(assetsBundle.unload());
-		}
-		return Promise.all(waiters).then();
-	}
-
 	/** enable user inputs globally for current scene, etc. */
-	abstract enableInput():void;
+	@final
+	enableInput():void {
+		this._sceneImpl.enableInteraction();
+	}
 
 	/** disable user inputs globally for current scene, etc. */
-	abstract disableInput():void;
-
-	onResize(resize:ResizeInfo):void {
-		// resize scene's root layers
-		const zeroPos:Point<number> = { x: 0, y: 0 };
-		for(const layerStructure of this._rootLayersStructure) {
-			const layerNode = this._rootLayers.get(layerStructure.layerId);
-			if(!layerNode) {
-				continue;
-			}
-			const layerPos = layerStructure.pos || zeroPos;
-			if(!layerPos) {
-				continue;
-			}
-			this._rootLayersAligner.alignPosition(layerNode, layerPos, resize.viewPort);
-		}
+	@final
+	disableInput():void {
+		this._sceneImpl.disableInteraction();
 	}
+
+	@final
+	onResize = (resize:ResizeInfo):void => {
+		this._sceneImpl.onResize?.(resize);
+	};
 }

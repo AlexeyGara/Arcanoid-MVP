@@ -94,10 +94,6 @@
           "target": "./src/game",
           "message": "Game -> App dependency are blocked!"
         }, {
-          "from": "./src/app",
-          "target": "./src/platform",
-          "message": "Platform -> App dependency are blocked!"
-        }, {
           "from": "./src/game",
           "target": "./src/core",
           "message": "Core -> Game dependency are blocked!"

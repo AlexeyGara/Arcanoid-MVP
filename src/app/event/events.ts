@@ -16,6 +16,7 @@ export type AppEvent = {
 
 	//settings
 	'APP.SHOW_SETTINGS':void;
+	'APP.HIDE_SETTINGS':void;
 
 	//start load
 	'APP.GOTO_GAME':{ levelId:string };
@@ -27,7 +28,12 @@ export type AppEvent = {
 	'APP.GAME_LOADED':{ levelId:string };
 
 	//finish on (show popup)
+	'APP.GAME_FAIL':void;
 	'APP.GAME_SUCCESS':void;
+
+	//pause the game (show popup)
+	'APP.GAME_PAUSE':void;
+	'APP.GAME_RESUME':void;
 
 	'APP.MUSIC.ENDED':{ musicAlias:AudioAssetID; completed:boolean };
 	'APP.MUSIC.STOPPED':void;
@@ -37,3 +43,23 @@ export type AppEvent = {
 }
 
 export type AppEventId = keyof AppEvent;
+
+export const appFsmEventsMap:EventsMap<AppEvent> = {
+	// events registered at app-FSM - the events invoke gameTransitions between states
+	'APP.RETURN_MAIN_MENU': true,
+	'APP.GOTO_GAME':        true,
+	'APP.GAME_LOADED':      true,
+	'APP.GAME_SUCCESS':     true,
+	'APP.GAME_FAIL':        true,
+	'APP.SHOW_SETTINGS':    true,
+	'APP.HIDE_SETTINGS':    true,
+	'APP.GAME_PAUSE':       true,
+	'APP.GAME_RESUME':      true,
+
+	// events do not register at app-FSM, just for handle at app-FlowController or other modules
+	'APP.MUSIC.ENDED':            false,
+	'APP.MUSIC.STOPPED':          false,
+	'APP.SCENE_LOADING_PROGRESS': false,
+	'APP.TRANSITION_BLOCKED':     false,
+	'APP.FATAL_ERROR':            false
+} as const;

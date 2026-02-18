@@ -13,8 +13,6 @@ import type { GameLoopPhaseActor } from "./gameloop-types";
 export interface IActionManager extends GameLoopPhaseActor<typeof GameLoopPhase.LOGIC>,
 										ActionStarter {
 
-	cancel(action:IAction, withComplete?:boolean):void;
-
 	cancelAllByTag(tag:string, withComplete?:boolean):void;
 
 	cancelAll(withComplete?:boolean):void;
@@ -23,6 +21,8 @@ export interface IActionManager extends GameLoopPhaseActor<typeof GameLoopPhase.
 export type ActionStarter = {
 
 	start(action:IAction & CanBeUpdate):Promise<OnFinishResult>;
+
+	cancel(action:IAction, withComplete?:boolean):void;
 }
 
 export interface IAction {

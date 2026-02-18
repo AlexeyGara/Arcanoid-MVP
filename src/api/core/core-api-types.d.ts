@@ -57,21 +57,10 @@ declare type SceneBase<TargetRootLayerId extends SceneLayersIdBase> = Record<Sce
 
 declare type SceneLayersIdBase = string;
 
+declare type SceneChildIdBase = string;
+
 declare type ContextBase = Record<string, unknown>;
 
 declare type EventsMap<TEvents extends EventBase> = {
 	[P in keyof TEvents]:boolean
 }
-
-declare type AlignMode = {
-	x:"center" | 'left' | 'right';
-	y:'center' | 'top' | 'bottom';
-};
-
-declare type RootLayerConfig<TLayersId extends SceneLayersIdBase> = {
-	readonly layerId:TLayersId;
-	readonly pos?:Point<number> | AlignMode;
-	readonly pivot?:Point<number> | AlignMode;
-};
-
-declare type RootLayersStructure<TRootLayersId extends SceneLayersIdBase> = Readonly<RootLayerConfig<TRootLayersId>[]>;

@@ -44,23 +44,25 @@ export abstract class FlowController<TSTATEid extends STATEidBase,
 		stateMachine:IStateMachine<TSTATEid, TEvents, TContext>,
 		statesFactory:IStatesFactory<TSTATEid, TEvents>
 	) {
-		this._eventBus = eventBus;
-		this._stateMachine = stateMachine;
+		this._eventBus      = eventBus;
+		this._stateMachine  = stateMachine;
 		this._statesFactory = statesFactory;
 		this.registerStatesAndTransitions(this._register);
 	}
 
-	start():Promise<void> {
+	async start():Promise<void> {
 		if(this._disposers.length > 0) {
 			logger.warn(`Double start of flow controller!`);
 			return Promise.resolve();
 		}
 
+		await this.beforeStart?.();
+
 		// register events - subscribe
 		this._disposers.push(...this.registerEvents(this._addEventHandler));
 
 		// initialize state machine - switch state machine to initial state
-		return this._stateMachine.init(this.getInitialStateId()).then((success:boolean) => {
+		return this._stateMachine.init(...this.getInitialStateId()).then((success:boolean) => {
 			if(success) {
 				this.onStart();
 			}
@@ -74,7 +76,9 @@ export abstract class FlowController<TSTATEid extends STATEidBase,
 		});
 	}
 
-	protected abstract getInitialStateId():TSTATEid;
+	protected beforeStart?():Promise<void>;
+
+	protected abstract getInitialStateId():[stateId:TSTATEid, payload?:TEvents[keyof TEvents]];
 
 	protected abstract onStart():void;
 
