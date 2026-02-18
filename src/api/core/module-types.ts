@@ -40,21 +40,23 @@ export type HaveDestroyPhase = IDestroyable & {
 	destroy():void;
 }
 
-export type CanBeAddToScene<TTargetLayerId extends SceneLayersIdBase> = {
+export type CanBeAddToScene<TTargetLayerId extends SceneLayersIdBase, TOwnUniqueId extends SceneChildIdBase> = {
+
+	readonly uniqueOwnId:TOwnUniqueId;
 
 	readonly targetLayerId:TTargetLayerId;
 }
 
-export interface IModule<TEvents extends EventBase, TRootLayerId extends SceneLayersIdBase>
+export interface IModule<TEvents extends EventBase, TRootLayerId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>
 	extends HaveActivePhase,
 			HaveEnterPhase<TEvents>,
 			HaveDestroyPhase {
 
 	/** Attach module view to scene, add module to gameLoop live-circle */
-	attachToScene(scene:ISceneHost<TRootLayerId>):void;
+	attachToScene(scene:ISceneHost<TRootLayerId, TViewsId>):void;
 
 	/** Detach module view from scene, remove module from gameLoop live-circle */
-	detachFromScene(scene:ISceneHost<TRootLayerId>):void;
+	detachFromScene(scene:ISceneHost<TRootLayerId, TViewsId>):void;
 
 	/** Apply payload-data and preactivate module, start fade-in action and wait it finished */
 	doEnter(payload?:TEvents[keyof TEvents]):Promise<void>;
@@ -79,7 +81,9 @@ export type ControlStrategy = {
 	update(deltaTimeMs:number):void;
 }
 
-export interface IControl<TModel extends IModel<TModelDTO>, TView extends IView<TRootLayerId, TModelDTO>, TRootLayerId extends SceneLayersIdBase, TModelDTO extends LightWeightModelBase = LightWeightModelBase>
+export interface IControl<TModel extends IModel<TModelDTO>,
+	TView extends IView<TRootLayerId, TViewId, TModelDTO>,
+	TRootLayerId extends SceneLayersIdBase, TViewId extends SceneChildIdBase, TModelDTO extends LightWeightModelBase = LightWeightModelBase>
 	extends IGameLoopUpdatable,
 			HaveDestroyPhase {
 
@@ -114,8 +118,8 @@ type LightWeightModelDTO<T extends LWMPrimitiveData> = {
 
 export type LightWeightModelBase<T extends LWMPrimitiveData = LWMPrimitiveData> = LightWeightModelDTO<T>
 
-export interface IView<TRootLayerId extends SceneLayersIdBase, TModelDTO extends LightWeightModelBase = LightWeightModelBase>
-	extends CanBeAddToScene<TRootLayerId>,
+export interface IView<TRootLayerId extends SceneLayersIdBase, TViewId extends SceneChildIdBase, TModelDTO extends LightWeightModelBase = LightWeightModelBase>
+	extends CanBeAddToScene<TRootLayerId, TViewId>,
 			IGameLoopUpdatable,
 			IResizable,
 			HaveDestroyPhase {

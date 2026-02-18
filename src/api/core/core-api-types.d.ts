@@ -57,6 +57,8 @@ declare type SceneBase<TargetRootLayerId extends SceneLayersIdBase> = Record<Sce
 
 declare type SceneLayersIdBase = string;
 
+declare type SceneChildIdBase = string;
+
 declare type ContextBase = Record<string, unknown>;
 
 declare type EventsMap<TEvents extends EventBase> = {

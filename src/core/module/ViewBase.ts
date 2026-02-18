@@ -17,10 +17,13 @@ import type { ResizeInfo }       from "@core-api/service-types";
 import { GameLoopPhase }         from "core/gameloop/GameLoopPhase";
 
 export abstract class ViewBase<TTargetLayerId extends SceneLayersIdBase,
+	TViewId extends SceneChildIdBase,
 	TModelDTO extends LightWeightModelBase = LightWeightModelBase>
-	implements IView<TTargetLayerId, TModelDTO> {
+	implements IView<TTargetLayerId, TViewId, TModelDTO> {
 
 	readonly updatePhase = GameLoopPhase.VIEW;
+
+	abstract readonly uniqueOwnId:TViewId;
 
 	abstract readonly destroyed:boolean;
 

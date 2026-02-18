@@ -15,6 +15,7 @@ import type {
 } from "@core-api/fsm-types";
 import type {
 	HaveActivePhase,
+	HaveDestroyPhase,
 	HaveEnterPhase,
 	IModule
 } from "@core-api/module-types";
@@ -26,6 +27,7 @@ import type {
 export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 	TCustomSceneId extends TSceneId = TSceneId,
 	TSceneLayersId extends SceneLayersIdBase = SceneLayersIdBase,
+	TSceneChildrenId extends SceneChildIdBase = SceneChildIdBase,
 	TEvent extends EventBase = EventBase>
 	implements IStateEnterStrategy<TEvent>,
 			   IStateStartStrategy,
@@ -34,16 +36,16 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 
 	readonly sceneId:TCustomSceneId;
 	private readonly _sceneLayers:RootLayersStructure<TSceneLayersId>;
-	private readonly _sceneModules:IModule<TEvent, TSceneLayersId>[];
+	private readonly _sceneModules:IModule<TEvent, TSceneLayersId, TSceneChildrenId>[];
 	private readonly _sceneManager:IScenesManager<TSceneId>;
-	private _scene!:ISceneHost<TSceneLayersId>;
+	private _scene!:ISceneHost<TSceneLayersId, TSceneChildrenId>;
 	private readonly _enterFinishHook?:() => Promise<void>;
 	private readonly _exitStartHook?:() => Promise<void>;
 
 	constructor(
 		sceneId:TCustomSceneId,
 		sceneLayers:RootLayersStructure<TSceneLayersId>,
-		sceneModules:IModule<TEvent, TSceneLayersId>[],
+		sceneModules:IModule<TEvent, TSceneLayersId, TSceneChildrenId>[],
 		sceneManager:IScenesManager<TSceneId>,
 		enterFinishHook?:() => Promise<void>,
 		exitStartHook?:() => Promise<void>
@@ -86,22 +88,29 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 		await this.hideScene(this._scene, this._sceneManager);
 	}
 
-	protected async showScene(sceneId:TSceneId, sceneLayers:RootLayersStructure<TSceneLayersId>,
-							  scenesManager:IScenesManager<TSceneId>):Promise<ISceneHost<TSceneLayersId>> {
+	protected async showScene(
+		sceneId:TSceneId,
+		sceneLayers:RootLayersStructure<TSceneLayersId>,
+		scenesManager:IScenesManager<TSceneId>
+	):Promise<ISceneHost<TSceneLayersId, TSceneChildrenId>> {
 
 		return await scenesManager.show(sceneId, sceneLayers);
 	}
 
-	protected attachModulesTo(scene:ISceneHost<TSceneLayersId>,
-							  modules:IModule<TEvent, TSceneLayersId>[]):void {
+	protected attachModulesTo(
+		scene:ISceneHost<TSceneLayersId, TSceneChildrenId>,
+		modules:IModule<TEvent, TSceneLayersId, TSceneChildrenId>[]
+	):void {
 
 		for(const module of modules) {
 			module.attachToScene(scene);
 		}
 	}
 
-	protected enterModules(modules:HaveEnterPhase<TEvent>[],
-						   payload?:TEvent[keyof TEvent]):Promise<void> {
+	protected enterModules(
+		modules:HaveEnterPhase<TEvent>[],
+		payload?:TEvent[keyof TEvent]
+	):Promise<void> {
 
 		const modulesStartWaiters:Promise<void>[] = [];
 
@@ -135,21 +144,25 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 		return Promise.all(modulesStartWaiters).then();
 	}
 
-	protected detachModules(scene:ISceneHost<TSceneLayersId>,
-							modules:IModule<TEvent, TSceneLayersId>[]):void {
+	protected detachModules(
+		scene:ISceneHost<TSceneLayersId, TSceneChildrenId>,
+		modules:IModule<TEvent, TSceneLayersId, TSceneChildrenId>[]
+	):void {
 
 		for(const module of modules) {
 			module.detachFromScene(scene);
 		}
 	}
 
-	protected async hideScene(scene:ISceneHost<TSceneLayersId>,
-							  scenesManager:IScenesManager<TSceneId>):Promise<void> {
+	protected async hideScene(
+		scene:ISceneHost<TSceneLayersId, TSceneChildrenId>,
+		scenesManager:IScenesManager<TSceneId>
+	):Promise<void> {
 
 		await scenesManager.hide(scene);
 	}
 
-	protected destroyModules(modules:IModule<TEvent, TSceneLayersId>[]):void {
+	protected destroyModules(modules:HaveDestroyPhase[]):void {
 
 		for(const module of modules) {
 			module.destroy();

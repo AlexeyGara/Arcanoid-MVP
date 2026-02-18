@@ -34,8 +34,9 @@ import type { IResizeManager }     from "@core-api/service-types";
 
 export abstract class Module<TEvents extends EventBase,
 	TTargetLayerId extends SceneLayersIdBase,
+	TViewsId extends SceneChildIdBase,
 	TModelDTO extends LightWeightModelBase = LightWeightModelBase>
-	implements IModule<TEvents, TTargetLayerId> {
+	implements IModule<TEvents, TTargetLayerId, TViewsId> {
 
 	protected get actionStarter():ActionStarter {
 		return this._actionManager;
@@ -56,8 +57,8 @@ export abstract class Module<TEvents extends EventBase,
 	readonly destroyed:boolean = false;
 
 	private readonly _model:IModel<TModelDTO>;
-	private readonly _views:IView<TTargetLayerId, TModelDTO>[];
-	private readonly _control:IControl<typeof this._model, typeof this._views[number], TTargetLayerId, TModelDTO>;
+	private readonly _views:IView<TTargetLayerId, TViewsId, TModelDTO>[];
+	private readonly _control:IControl<typeof this._model, typeof this._views[number], TTargetLayerId, TViewsId, TModelDTO>;
 	private readonly _actionManager:IActionManager;
 	private readonly _animationManager:IAnimationManager;
 	private readonly _soundManager:ISoundManager;
@@ -67,8 +68,8 @@ export abstract class Module<TEvents extends EventBase,
 
 	protected constructor(
 		model:IModel<TModelDTO>,
-		views:IView<TTargetLayerId, TModelDTO>[],
-		control:IControl<typeof model, typeof views[number], TTargetLayerId, TModelDTO>,
+		views:IView<TTargetLayerId, TViewsId, TModelDTO>[],
+		control:IControl<typeof model, typeof views[number], TTargetLayerId, TViewsId, TModelDTO>,
 		resizeManager:IResizeManager,
 		actionSystemProvider:() => IActionManager,
 		animationSystemProvider:() => IAnimationManager,
@@ -83,7 +84,8 @@ export abstract class Module<TEvents extends EventBase,
 		[this._soundManager, this._soundVoice] = soundSystemProvider();
 	}
 
-	attachToScene(scene:ISceneHost<TTargetLayerId>):void {
+	attachToScene(scene:ISceneHost<TTargetLayerId, TViewsId>):void {
+
 		for(const view of this._views) {
 			view.onBeforeAttach?.();
 
@@ -101,7 +103,8 @@ export abstract class Module<TEvents extends EventBase,
 		scene.addToUpdateLoop(...this.getUpdatableMembers());
 	}
 
-	detachFromScene(scene:ISceneHost<TTargetLayerId>):void {
+	detachFromScene(scene:ISceneHost<TTargetLayerId, TViewsId>):void {
+
 		scene.removeFromUpdateLoop(...this.getUpdatableMembers());
 
 		for(const view of this._views) {
@@ -114,6 +117,7 @@ export abstract class Module<TEvents extends EventBase,
 	}
 
 	async doEnter(payload?:TEvents[keyof TEvents]):Promise<void> {
+
 		if(payload) {
 			this.applyPayload?.(payload);
 		}
@@ -128,6 +132,7 @@ export abstract class Module<TEvents extends EventBase,
 	protected getFadeInAction?(soundsVolumeManager:IVolumeManager):IAction & CanBeUpdate;
 
 	activate():void {
+
 		if(this._active) {
 			return;
 		}
@@ -138,10 +143,12 @@ export abstract class Module<TEvents extends EventBase,
 	}
 
 	protected doStart():void {
+
 		this._control.start(this.actionStarter, [this.soundStarter, this._soundVoice]);
 	}
 
 	deactivate():void {
+
 		if(!this._active) {
 			return;
 		}
@@ -156,6 +163,7 @@ export abstract class Module<TEvents extends EventBase,
 	}
 
 	async doExit():Promise<void> {
+
 		const fadeOutAction = this.getFadeOutAction?.(this._soundVoice);
 		if(fadeOutAction) {
 			await this.actionStarter.start(fadeOutAction);
@@ -170,6 +178,7 @@ export abstract class Module<TEvents extends EventBase,
 	protected getFadeOutAction?(soundsVolumeManager:IVolumeManager):IAction & CanBeUpdate;
 
 	protected getUpdatableMembers():IGameLoopUpdatable[] {
+
 		return [
 			...this._views.filter((view) => !!view.update),
 			...[this._control].filter((control) => !!control.update)
@@ -177,6 +186,7 @@ export abstract class Module<TEvents extends EventBase,
 	}
 
 	destroy():void {
+
 		this._control.destroy();
 
 		for(const view of this._views) {

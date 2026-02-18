@@ -22,10 +22,11 @@ import type {
 import { GameLoopPhase }      from "core/gameloop/GameLoopPhase";
 
 export abstract class ControlBase<TModel extends IModel<TModelDTO>,
-	TView extends IView<TTargetLayerId, TModelDTO>,
+	TView extends IView<TTargetLayerId, TViewsId, TModelDTO>,
 	TTargetLayerId extends SceneLayersIdBase,
+	TViewsId extends SceneChildIdBase,
 	TModelDTO extends LightWeightModelBase = LightWeightModelBase>
-	implements IControl<TModel, TView, TTargetLayerId, TModelDTO> {
+	implements IControl<TModel, TView, TTargetLayerId, TViewsId, TModelDTO> {
 
 	get updatePhase():typeof GameLoopPhase.LOGIC {
 		return GameLoopPhase.LOGIC;

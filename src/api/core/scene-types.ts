@@ -11,15 +11,15 @@ import type { IGameLoopUpdatable } from "@core-api/gameloop-types";
 import type { CanBeAddToScene }    from "@core-api/module-types";
 import type { IResizable }         from "@core-api/service-types";
 
-export interface IViewsHolder<TTargetLayerId extends SceneLayersIdBase> {
+export interface IViewsHolder<TTargetLayerId extends SceneLayersIdBase, TViewId extends SceneChildIdBase> {
 
-	add(view:CanBeAddToScene<TTargetLayerId>):void;
+	add(view:CanBeAddToScene<TTargetLayerId, TViewId>):void;
 
-	remove(view:CanBeAddToScene<TTargetLayerId>):void;
+	remove(view:CanBeAddToScene<TTargetLayerId, TViewId>):void;
 }
 
-export interface ISceneHost<TRootLayerId extends SceneLayersIdBase>
-	extends IViewsHolder<TRootLayerId> {
+export interface ISceneHost<TRootLayerId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>
+	extends IViewsHolder<TRootLayerId, TViewsId> {
 
 	readonly sceneId:SceneIdBase;
 
@@ -55,32 +55,38 @@ export interface IScenesManagerControlled<TSceneId extends SceneIdBase,
 export type SceneObject<TSceneId extends SceneIdBase,
 	TSceneProps extends SceneIdPropsBase<TTargetRootLayerId>,
 	TTargetRootLayerId extends SceneLayersIdBase,
-	TSceneLayersId extends SceneLayersIdBase>
-	= ISceneHost<TSceneLayersId>
+	TSceneLayersId extends SceneLayersIdBase,
+	TSceneChildrenId extends SceneChildIdBase>
+	= ISceneHost<TSceneLayersId, TSceneChildrenId>
 	  & IScenesManagerControlled<TSceneId, TSceneProps, TTargetRootLayerId>
 	  & IResizable;
 
 export interface IScenesFactory<TSceneId extends SceneIdBase,
 	TSceneProps extends SceneIdPropsBase<TTargetRootLayerId>,
-	TTargetRootLayerId extends SceneLayersIdBase> {
+	TTargetRootLayerId extends SceneLayersIdBase,
+	TSceneChildrenId extends SceneChildIdBase> {
 
 	createScene<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase>(
 		sceneId:TCustomSceneId,
 		sceneRootLayers:RootLayersStructure<TSceneLayersId>
-	):SceneObject<TCustomSceneId, TSceneProps, TTargetRootLayerId, TSceneLayersId>;
+	):SceneObject<TCustomSceneId,
+		TSceneProps,
+		TTargetRootLayerId,
+		TSceneLayersId,
+		TSceneChildrenId>;
 }
 
 export interface IScenesManager<TSceneId extends SceneIdBase> {
 
 	isActive(sceneId:TSceneId):boolean;
 
-	show<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase>(
+	show<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
 		sceneId:TCustomSceneId,
 		sceneLayers:RootLayersStructure<TSceneLayersId>
-	):Promise<ISceneHost<TSceneLayersId>>;
+	):Promise<ISceneHost<TSceneLayersId, TViewsId>>;
 
-	hide<TSceneLayersId extends SceneLayersIdBase>(
-		scene:ISceneHost<TSceneLayersId>
+	hide<TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
+		scene:ISceneHost<TSceneLayersId, TViewsId>
 	):Promise<boolean>;
 
 	isCached(sceneId:TSceneId):boolean;

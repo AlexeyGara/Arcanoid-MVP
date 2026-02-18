@@ -58,3 +58,7 @@ export interface IEventImmediatelyEmitter<TEvents> {
 export type IEventBus<TEvents extends EventBase> = IEventDispatcher<TEvents> &
 												   IEventEmitter<TEvents> &
 												   IEventImmediatelyEmitter<TEvents>;
+
+export type ErrorEventsEmitter = {
+	emitFatalErrorEvent: (e:Error) => void;
+}
