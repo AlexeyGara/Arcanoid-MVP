@@ -1,0 +1,107 @@
+{
+  "semi": ["error", "always"],
+
+  "@stylistic/ts/member-delimiter-style": ["error", {
+    "multiline": {"delimiter": "semi", "requireLast": true}
+  }],
+
+  "@typescript-eslint/naming-convention": [
+    "error", {
+      "selector": "memberLike",
+      "modifiers": ["private"],
+      "format": ["camelCase"],
+      "leadingUnderscore": "require"
+    }, {
+      "selector": "memberLike",
+      "modifiers": ["public", "protected"],
+      "format": ["camelCase"],
+      "leadingUnderscore": "forbid"
+    }, {
+      "selector": "variable",
+      "format": ["camelCase", "UPPER_CASE"],
+      "leadingUnderscore": "forbid"
+    }, {
+      "selector": "variable",
+      "modifiers": ["const", "exported"],
+      "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+      "leadingUnderscore": "forbid"
+    }, {
+      "selector": "classProperty",
+      "modifiers": ["static", "readonly"],
+      "format": ["UPPER_CASE"],
+      "leadingUnderscore": "forbid"
+    }
+  ],
+
+  "@typescript-eslint/consistent-type-imports": [
+    "error",
+    {
+      "prefer": "type-imports",
+      "fixStyle": "separate-type-imports"
+    }
+  ],
+  "@typescript-eslint/explicit-module-boundary-types": "error",
+  "@typescript-eslint/explicit-function-return-type": "error",
+  "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
+  "@typescript-eslint/explicit-member-accessibility": ["error", { "accessibility": "no-public" }],
+
+  "no-restricted-syntax": [
+    "error", {
+      "selector": "TSEnumDeclaration",
+      "message": "Enum usage are deprecated! Use 'export const PascalNamed = { ... } as const' instead. And use type auto-inferring 'export type PascalNamed = typeof PascalNamed[keyof typeof PascalNamed]'."
+    }, {
+      "selector": "TSMethodSignature[kind='get'], TSMethodSignature[kind='set']",
+      "message": "No get/set at interface and types declarations."
+    }
+  ],
+
+  "@typescript-eslint/no-misused-promises": [
+    "error", {"checksVoidReturn": true}
+  ],
+  "@typescript-eslint/no-floating-promises": "error",
+
+  "no-restricted-imports": ["error", {
+    "patterns": [{
+      "group": ["../*"],
+      "message": "Not relative '../' imports! Please use alias instead."
+    }]
+  }],
+  "import/no-restricted-paths": [
+    "error",
+    {
+      "zones": [{
+          "from": "./src/platform",
+          "target": "./src/api",
+          "message": "Do not use platform directly! Please use dependency inversion instead."
+        }, {
+          "from": "./src/platform",
+          "target": "./src/app",
+          "message": "Do not use platform directly! Please use dependency inversion instead."
+        }, {
+          "from": "./src/platform",
+          "target": "./src/core",
+          "message": "Do not use platform directly! Please use dependency inversion instead."
+        }, {
+          "from": "./src/platform",
+          "target": "./src/game",
+          "message": "Do not use platform directly! Please use dependency inversion instead."
+        }, {
+          "from": "./src/app",
+          "target": "./src/core",
+          "message": "Core -> App dependency are blocked!"
+        }, {
+          "from": "./src/app",
+          "target": "./src/game",
+          "message": "Game -> App dependency are blocked!"
+        }, {
+          "from": "./src/app",
+          "target": "./src/platform",
+          "message": "Platform -> App dependency are blocked!"
+        }, {
+          "from": "./src/game",
+          "target": "./src/core",
+          "message": "Core -> Game dependency are blocked!"
+      }]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "arcanoid-mvp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage && open coverage/lcov-report/index.html",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "type-check:watch": "npm run type-check -- --watch",
+    "lint": "eslint ./",
+    "lint:fix": "eslint ./ --fix",
+    "cleanup": "rimraf build dist temp",
+    "start": "npm run dev",
+    "build": "npm run lint && tsc && vite build",
+    "dev": "vite --force",
+    "inspect-eslint": "npx @eslint/config-inspector"
+  },
+  "dependencies": {
+    "@pixi/sound": "^6.0.1",
+    "@pixi/ui": "^2.3.2",
+    "@releaseband/ecs": "^3.0.4",
+    "gsap": "^3.14.2",
+    "inversify": "^7.10.8",
+    "pixi.js": "^8.8.1",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@stylistic/eslint-plugin-ts": "^1.8.1",
+    "@types/jest": "^30.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "@typescript-eslint/parser": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "gh-pages": "^6.3.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.4.6",
+    "typescript": "^4.9.5",
+    "typescript-eslint": "^8.25.0",
+    "vite": "^6.2.0",
+    "vite-plugin-swc-transform": "^1.1.1",
+    "vite-tsconfig-paths": "^6.0.5"
+  }
+}

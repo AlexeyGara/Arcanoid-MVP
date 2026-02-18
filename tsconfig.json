@@ -1,0 +1,106 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "baseUrl": "./src",
+    "paths": {
+      "@_global-init_": ["./global-init.ts"],
+
+      "@core-api/*": ["api/core/*"],
+      "@app-api/*": ["api/app/*"],
+      "@game-api/*": ["api/game/*"],
+
+      "services/*": ["app/services/*"],
+      "user/*": ["app/user/*"],
+      "app/*": ["app/*"],
+      "core/*": ["core/*"],
+      "game/*": ["game/*"],
+      "assets/*": ["assets/*"],
+
+      "@web/*": ["platform/web/*"],
+      "@browser/*": ["platform/browser/*"],
+      "@pixi/*": ["platform/pixi/*"],
+      "@platform/*": ["platform/*"],
+
+      "@di/*": ["di/*"],
+    },
+
+    /* Bundler mode */
+    "moduleResolution": "node",
+    // Allow imports to include TypeScript file extensions.
+    //"allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "importsNotUsedAsValues": "error",
+
+    /* Linting */
+    // Enable all strict type-checking options.
+    "strict": true,
+    // When type checking, take into account null and undefined.
+    "strictNullChecks": true,
+    // When assigning functions, check to ensure parameters and the return values are subtype-compatible.
+    "strictFunctionTypes": true,
+    // Check that the arguments for bind, call, and apply methods match the original function.
+    "strictBindCallApply": true,
+    // Check for class properties that are declared but not set in the constructor.
+    "strictPropertyInitialization": true,
+    // Built-in iterators are instantiated with a TReturn type of undefined instead of any.
+    //"strictBuiltinIteratorReturn": false,
+    // Enable error reporting for expressions and declarations with an implied any type.
+    "noImplicitAny": true,
+    // Enable error reporting when this is given the type any.
+    "noImplicitThis": true,
+    // Enable error reporting for codepaths that do not explicitly return in a function.
+    "noImplicitReturns": true,
+    // Ensure overriding members in derived classes are marked with an override modifier.
+    "noImplicitOverride": true,
+    // Default catch clause variables as unknown instead of any.
+    "useUnknownInCatchVariables": false,
+    // Ensure 'use strict' is always emitted.
+    "alwaysStrict": true,
+    // Enable error reporting when local variables aren't read.
+    "noUnusedLocals": true,
+    // Raise an error when a function parameter isn't read.
+    "noUnusedParameters": true,
+    // Enable error reporting for fallthrough cases in switch statements.
+    "noFallthroughCasesInSwitch": true,
+    // Add undefined to a type when accessed using an index.
+    "noUncheckedIndexedAccess": false,
+    // Check side effect imports.
+    //"noUncheckedSideEffectImports": true,
+    // Enforces using indexed accessors for keys declared using an indexed type.
+    "noPropertyAccessFromIndexSignature": true,
+    // Interpret optional property types as written, rather than adding undefined.
+    "exactOptionalPropertyTypes": false,
+    // Disable error reporting for unused labels.
+    "allowUnusedLabels": false,
+    // Disable error reporting for unreachable code.
+    "allowUnreachableCode": false
+  },
+  "include": [
+    //"src/**/*.ts",
+    //"src/**/*.d.ts",
+    "src",
+    "node_modules/gsap/types",
+    "test/**/*"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+    "temp",
+    "build"
+  ]
+}
