@@ -7,8 +7,14 @@
  * Last modified: 2026-02-18 09:17
  */
 
+import type { StateOverlayMode } from "core/fsm/state/StateOverlayMode";
+
 export interface IState<TCustomSTATEid extends STATEidBase, TEvents extends EventBase> {
+	/** Current state ID (name) */
 	readonly stateId:TCustomSTATEid;
+
+	/** The allowed overlay mode when combined with another state that will overlap the current one. */
+	readonly overlayMode:StateOverlayMode;
 
 	/** Prepare state to activate - create scene, preload assets, attach modules view to scene, add modules to gameLoop live-circle, apply payload-data and preactivate modules, start fade-in action */
 	enter(payload?:TEvents[keyof TEvents]):Promise<void>;
@@ -56,7 +62,7 @@ export type Transition<TSTATEid extends STATEidBase,
 	 * StateId where transition started
 	 * @[WARNING]: Do not rename this field
 	 */
-	readonly fromStateId:TSTATEid;
+	readonly fromStateId?:TSTATEid;
 	readonly toStateId:TSTATEid;
 	readonly onEvent:keyof TEvents;
 	/**
@@ -77,6 +83,9 @@ export type Transition<TSTATEid extends STATEidBase,
 	 */
 	canInterrupt?:boolean;
 }
+
+export type OverlayTransitionProvider<TStateID extends STATEidBase, TEvents extends EventBase>
+	= (overlayMode:StateOverlayMode) => ITransitionStrategy<TStateID, TEvents>;
 
 export interface ITransitionStrategy<TSTATEid extends STATEidBase,
 	TEvents extends EventBase> {
@@ -127,7 +136,7 @@ export interface ICanStateChange<TSTATEid extends STATEidBase,
 
 	readonly current:IState<TSTATEid, TEvents> | null;
 
-	init(stateId:TSTATEid):Promise<boolean>;
+	init(stateId:TSTATEid, payload?:TEvents[keyof TEvents]):Promise<boolean>;
 
 	handle(event:keyof TEvents, payload?:TEvents[keyof TEvents]):Promise<HandleEventTransitionResult<TSTATEid>>;
 
@@ -156,7 +165,7 @@ type FromStateFieldKey = "fromStateId" extends keyof Transition<STATEidBase, Eve
 type OtherFieldsKeys = Exclude<keyof Transition<STATEidBase, EventBase, ContextBase>, FromStateFieldKey>;
 
 type SingleFromStateField<TCustomSTATEid extends STATEidBase>
-	= { [P in FromStateFieldKey]:TCustomSTATEid };
+	= { [P in FromStateFieldKey]:TCustomSTATEid | undefined };
 
 type ExcludeFromStateField<TSTATEid extends STATEidBase,
 	TEvents extends EventBase,

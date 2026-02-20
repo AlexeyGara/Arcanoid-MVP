@@ -12,26 +12,27 @@ import type {
 	IAudioPlayer,
 	IMusicManager,
 	VoiceUpdatable
-}                           from "@core-api/audio-types";
+}                            from "@core-api/audio-types";
 import type {
 	FocusInOutForwarder,
 	ResizeEventForwarder,
 	ViewSizeProvider
-}                           from "@core-api/service-types";
+}                            from "@core-api/service-types";
 import type {
 	IPauseManager,
 	SystemsProvider
-}                           from "@core-api/system-types";
+}                            from "@core-api/system-types";
+import { AppFlowController } from "app/flow/AppFlowController";
 import {
 	isAppSystem,
 	isDestroyable,
 	isGameLoopActor
-}                           from "core/core-utils";
-import { EventBus }         from "core/event/EventBus";
-import { GameLoop }         from "core/gameloop/GameLoop";
-import { ResizeManager }    from "core/services/ResizeManager";
-import { ActionManager }    from "core/systems/action/ActionManager";
-import { AnimationManager } from "core/systems/animation/AnimationManager";
+}                            from "core/core-utils";
+import { EventBus }          from "core/event/EventBus";
+import { GameLoop }          from "core/gameloop/GameLoop";
+import { ResizeManager }     from "core/services/ResizeManager";
+import { ActionManager }     from "core/systems/action/ActionManager";
+import { AnimationManager }  from "core/systems/animation/AnimationManager";
 import { AudioVoice }       from "core/systems/audio/AudioVoice";
 import { MusicManager }     from "core/systems/audio/MusicManager";
 import { SoundsManager }    from "core/systems/audio/SoundsManager";
@@ -131,7 +132,7 @@ export class Bootstrap {
 		gameLoop.start(Platform.getFrameRequester());
 
 		// start main flow
-
+		const appFlowControl = new AppFlowController();
 	}
 
 	private _providePauseManager = (rootPauseManager:IPauseManager):SystemsProvider['pauseManager'] => ({

@@ -17,15 +17,13 @@ import type {
 import type { AppEvent }   from "app/event/events";
 
 export const AppSTATEid = {
-	MAIN_MENU: 'main_menu',
-	BONUS_ROOM: 'bonus_room',
-	LOADING_MAP: 'loading_map',
-	MAP_SCREEN: 'map',
-	LOADING_TRAINING: 'loading_training',
-	TRAINING_MODE: 'training',
+	MAIN_MENU:    'main_menu',
+	SETTINGS:     'settings',
 	LOADING_GAME: 'loading_game',
-	GAME_MODE: 'game',
-	WIN_SCREEN: 'win_screen',
+	GAME_MODE:    'game',
+	PAUSE_MODE:   "pause_game",
+	LOSE_MODE:    'lose_game',
+	WIN_SCREEN:   'win_screen',
 } as const;
 
 export type AppSTATEid = typeof AppSTATEid[keyof typeof AppSTATEid];

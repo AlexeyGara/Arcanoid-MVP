@@ -71,7 +71,7 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 
 	async show<TCustomSceneId extends TScenesId, TSceneLayersId extends SceneLayersIdBase>(
 		sceneId:TCustomSceneId,
-		sceneLayers:RootLayersStructure<TSceneLayersId>
+		sceneLayers:TSceneLayersId[]
 	):Promise<ISceneHost<TSceneLayersId, string>> {
 
 		let scene = this._activeScenes.get(sceneId);
@@ -123,7 +123,7 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 
 	private async _getOrCreate<TSceneLayersId extends SceneLayersIdBase>(
 		sceneId:TScenesId,
-		sceneLayers:RootLayersStructure<TSceneLayersId>
+		sceneLayers:TSceneLayersId[]
 	):Promise<SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, string>> {
 
 		let scene = this._getFromCache(sceneId);

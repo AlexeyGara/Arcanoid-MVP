@@ -68,7 +68,7 @@ export interface IScenesFactory<TSceneId extends SceneIdBase,
 
 	createScene<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase>(
 		sceneId:TCustomSceneId,
-		sceneRootLayers:RootLayersStructure<TSceneLayersId>
+		sceneRootLayers:TSceneLayersId[]
 	):SceneObject<TCustomSceneId,
 		TSceneProps,
 		TTargetRootLayerId,
@@ -82,7 +82,7 @@ export interface IScenesManager<TSceneId extends SceneIdBase> {
 
 	show<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
 		sceneId:TCustomSceneId,
-		sceneLayers:RootLayersStructure<TSceneLayersId>
+		sceneLayers:TSceneLayersId[]
 	):Promise<ISceneHost<TSceneLayersId, TViewsId>>;
 
 	hide<TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(

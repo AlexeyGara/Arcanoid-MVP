@@ -9,6 +9,10 @@
 
 import type { ResourceDescription } from "@platform/engine/resources";
 import type {
+	AlignMode,
+	RootLayerConfig
+}                                   from "@platform/engine/ui/base-types";
+import type {
 	IDisposableNode,
 	IHaveChildrenNodeUI,
 	IInteractiveNodeUI,

@@ -74,11 +74,11 @@ export class EventBus<TEvents extends EventBase> implements IEventDispatcherClea
 	}
 
 	emit<K extends keyof TEvents>(event:K, payload:TEvents[K]):Promise<void> {
-		const waiter = Promise.resolve();
+		const utilityWaiter = Promise.resolve();
 
 		this._queue.push([event, payload]);
 
-		return waiter;
+		return utilityWaiter;
 	}
 
 	clear():void {

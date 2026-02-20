@@ -29,6 +29,9 @@ export type AppEvent = {
 	//finish on (show popup)
 	'APP.GAME_SUCCESS':void;
 
+	//pause the game (show popup)
+	'APP.GAME_PAUSE':void;
+
 	'APP.MUSIC.ENDED':{ musicAlias:AudioAssetID; completed:boolean };
 	'APP.MUSIC.STOPPED':void;
 

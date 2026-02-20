@@ -12,6 +12,8 @@ import type { SystemsProvider } from "@core-api/system-types";
 
 export type AppContext = DeepReadonly<{
 
+
+
 	systems:{
 		pause:SystemsProvider['pauseManager'];
 		actions:SystemsProvider['actionsManager'];

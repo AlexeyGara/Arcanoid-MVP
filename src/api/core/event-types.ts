@@ -35,7 +35,10 @@ export interface IEventEmitter<TEvents> {
 	 * async function():Promise<void> {
 	 * 	.....
 	 * 	// await when 'utility'-promise resolved...
-	 * 	await this.eventEmitter.asyncEmit(EventID.EventName);
+	 * 	await this.eventEmitter.emit(EventID.EventName, payload);
+	 * 	.....
+	 * 	// or return 'utility'-promise
+	 * 	return this.eventEmitter.emit(EventID.EventName, payload);
 	 * }
 	 * // ...and only now after 'utility'-promise resolved the event will be emitted (on the next game-loop cycle)!
 	 * ```

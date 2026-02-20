@@ -29,6 +29,7 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 	implements IState<TCustomSTATEid, TEvents> {
 
 	readonly stateId:TCustomSTATEid;
+
 	private readonly _enterPhaseModules:Array<HaveActivePhase & HaveEnterPhase<TEvents>>;
 	private readonly _activePhaseModules:HaveActivePhase[];
 	private readonly _stateContext?:StateContext;

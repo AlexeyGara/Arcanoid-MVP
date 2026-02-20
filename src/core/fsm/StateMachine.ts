@@ -12,12 +12,18 @@ import type {
 	ICanStatesRegister,
 	IState,
 	ITransitionStrategy,
+	OverlayTransitionProvider,
 	Transition,
 	TransitionWithLinkedFromStateField
 }                                       from "@core-api/fsm-types";
 import { StateMachineHandleEventError } from "core/errors/flow/StateMachineHandleEventError";
 import { StateMachineTransitionError }  from "core/errors/flow/StateMachineTransitionError";
-import { TransitionStrategy }           from "core/fsm/TransitionStrategy";
+import {
+	checkTransitionPermit,
+	resolveTransitionStrategy
+}                                       from "core/fsm/fsm-utils";
+import { overlayStrategiesProvider }    from "core/fsm/strategy/strategies";
+import { TransitionStrategy }           from "core/fsm/strategy/TransitionStrategy";
 
 export abstract class StateMachine<TSTATEid extends STATEidBase,
 	TEvents extends EventBase,
@@ -29,19 +35,22 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 		return this._current;
 	}
 
-	private readonly _stateProviders:Map<TSTATEid, () => IState<TSTATEid, TEvents>> = new Map();
+	private readonly _stateProviders:Map<TSTATEid, () => IState<TSTATEid, TEvents>>        = new Map();
 	private readonly _transitions:Map<TSTATEid, Transition<TSTATEid, TEvents, TContext>[]> = new Map();
 	private _transitionStrategy:ITransitionStrategy<TSTATEid, TEvents>;
-	private _onTransition:Transition<TSTATEid, TEvents, TContext> | null = null;
-	private _current:IState<TSTATEid, TEvents> | null = null;
+	private _overlayStrategyProvider:OverlayTransitionProvider<TSTATEid, TEvents>;
+	private _onTransition?:Transition<TSTATEid, TEvents, TContext>;
+	private _current:IState<TSTATEid, TEvents> | null                                      = null;
 	private readonly _context:TContext;
 
 	protected constructor(
 		context:TContext,
 		transitionStrategy?:ITransitionStrategy<TSTATEid, TEvents>,
+		overlayStrategyProvider?:OverlayTransitionProvider<TSTATEid, TEvents>
 	) {
-		this._context = context;
-		this._transitionStrategy = transitionStrategy || new TransitionStrategy();
+		this._context                 = context;
+		this._transitionStrategy      = transitionStrategy || new TransitionStrategy();
+		this._overlayStrategyProvider = overlayStrategyProvider || overlayStrategiesProvider;
 	}
 
 	registerState<K extends TSTATEid>(stateId:K, stateProvider:() => IState<K, TEvents>):void {
@@ -106,93 +115,49 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 			throw new StateMachineHandleEventError(`State machine not initialized yet!`);
 		}
 
-		// find transition for handle current event [
-
 		const transition = this._findTransition(event, this._current.stateId);
-
 		if(!transition) {
 			throw new StateMachineHandleEventError(`Transition for event '${String(event)}' not found.`);
 		}
 
-		// ]
-
-		// check and resolve legal transition fails [
+		const checkResult = checkTransitionPermit(this._current, event, transition,
+												  this._stateProviders.has, this._context,
+												  this._onTransition);
+		if(checkResult !== true) {
+			return checkResult;
+		}
 
 		if(this._onTransition) {
-			if(!this._onTransition.canInterrupt) {
-				return {
-					triggerEvent: String(event),
-					result: "blocked",
-					fromStateId: this._onTransition.fromStateId,
-					toStateId: this._onTransition.toStateId,
-					info: `State machine is under transition from '${this._onTransition.fromStateId}' to '${this._onTransition.toStateId}' and cannot interrupt by event '${String(
-						event)}'!`
-				} as HandleEventTransitionResult<TSTATEid, "blocked">;
-			}
-			else {
-				//TODO: implement current transition cancellation
-				return {
-					triggerEvent: String(event),
-					result: "blocked",
-					fromStateId: this._onTransition.fromStateId,
-					toStateId: this._onTransition.toStateId,
-					info: `State machine is under transition from '${this._onTransition.fromStateId}' to '${this._onTransition.toStateId}' and cannot interrupt by event '${String(
-						event)}'!`
-				} as HandleEventTransitionResult<TSTATEid, "blocked">;
-			}
+			//TODO: implement current transition cancellation and remove this: @see checkTransitionPermit
+			await Promise.resolve();
 		}
-
-		if(!this._stateProviders.has(transition.toStateId)) {
-			return {
-				triggerEvent: String(event),
-				result: "blocked",
-				fromStateId: this._current.stateId,
-				toStateId: transition.toStateId,
-				info: `State '${transition.toStateId}' have not been registered at state machine!`
-			} as HandleEventTransitionResult<TSTATEid, "blocked">;
-		}
-
-		if(transition.guard && !transition.guard(this._context)) {
-			return {
-				triggerEvent: String(event),
-				result: "blocked",
-				fromStateId: this._current.stateId,
-				toStateId: transition.toStateId,
-				info: `Transition to state '${transition.toStateId}' blocked by guard.`
-			} as HandleEventTransitionResult<TSTATEid, "blocked">;
-		}
-
-		// ]
 
 		this._onTransition = transition;
 
-		// do a specified action before transition starts [
-
+		// do a specified action before transition starts
 		transition.action?.(this._context, payload);
 
-		// ]
-
-		// transition block [
-
-		this._current = await this._transitionStrategy.doTransition(
-			this._current,
-			transition.toStateId,
-			this._createState.bind(this),
-			payload
-		);
-
-		if(!this._current) {
-			throw new StateMachineTransitionError(transition.toStateId);
+		// transition block:
+		const transitionStrategy = resolveTransitionStrategy(this._current, transition,
+															 this._transitionStrategy,
+															 this._overlayStrategyProvider);
+		try {
+			/*this._current || this._overlays.push()*/ = await transitionStrategy.doTransition(
+				this._current,
+				transition.toStateId,
+				this._createState.bind(this),
+				payload
+			);
+		}
+		catch(e) {
+			throw new StateMachineTransitionError(transition.toStateId,
+												  `The transition from '${this._current.stateId}' to '${transition.toStateId}' was permitted, but an error occurred!`,
+												  e);
 		}
 
-		// ] transition block
+		delete this._onTransition;
 
-		this._onTransition = null;
-
-		return {
-			triggerEvent: String(event),
-			result: "success",
-		} as HandleEventTransitionResult<TSTATEid, "success">;
+		return { triggerEvent: String(event), result: "success", };
 	}
 
 	private _createState(stateId:TSTATEid):IState<TSTATEid, TEvents> {

@@ -1,10 +1,10 @@
 /*
  * Copyright © 2026 Alexey Gara (alexey.gara@gmail.com). All rights reserved.
- * Project: Chesstles-TS
- * File: TransitionStrategy.ts
- * Path: src/core/fsm/
+ * Project: Arcanoid-MVP
+ * File: OverlayStrategy.ts
+ * Path: src/core/fsm/strategy/
  * Author: alexeygara
- * Last modified: 2026-01-20 20:14
+ * Last modified: 2026-02-19 21:17
  */
 
 import type {
@@ -12,9 +12,11 @@ import type {
 	ITransitionStrategy
 } from "@core-api/fsm-types";
 
-export class TransitionStrategy<TSTATEid extends STATEidBase,
-	TEvents extends EventBase>
+export class OverlayInactiveStrategy<TSTATEid extends STATEidBase, TEvents extends EventBase>
 	implements ITransitionStrategy<TSTATEid, TEvents> {
+
+	constructor() {
+	}
 
 	async doTransition(
 		currentState:IState<TSTATEid, TEvents>,
@@ -28,8 +30,6 @@ export class TransitionStrategy<TSTATEid extends STATEidBase,
 		const nextState = this.getNextState(nextStateId, nextStateProvider);
 
 		await this.enterNextState(nextState, eventPayload);
-
-		await this.exitCurrentState(currentState);
 
 		this.startNextState(nextState);
 
@@ -50,11 +50,8 @@ export class TransitionStrategy<TSTATEid extends STATEidBase,
 		await state.enter(eventPayload);
 	}
 
-	protected async exitCurrentState(state:IState<TSTATEid, TEvents>):Promise<void> {
-		await state.exit();
-	}
-
 	protected startNextState(state:IState<TSTATEid, TEvents>):void {
 		state.start();
 	}
+
 }
