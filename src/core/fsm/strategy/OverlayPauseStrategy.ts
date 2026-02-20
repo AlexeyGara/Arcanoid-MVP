@@ -19,12 +19,17 @@ export class OverlayPauseStrategy<TSTATEid extends STATEidBase, TEvents extends 
 	}
 
 	async doTransition(
-		currentState:IState<TSTATEid, TEvents>,
-		nextStateId:TSTATEid,
-		nextStateProvider:(stateId:TSTATEid) => IState<TSTATEid, TEvents>,
+		fromState:IState<TSTATEid, TEvents>,
+		toState:IState<TSTATEid, TEvents>,
 		eventPayload?:TEvents[keyof TEvents]
-	):Promise<IState<TSTATEid, TEvents>> {
+	):Promise<void> {
 
+		fromState.stop();
 
+		fromState.pauseManager.pause();
+
+		await toState.enter(eventPayload);
+
+		toState.start();
 	}
 }

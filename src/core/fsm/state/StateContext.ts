@@ -8,6 +8,7 @@
  */
 
 import type {
+	IStateAttachStrategy,
 	IStateEnterStrategy,
 	IStateExitStrategy,
 	IStateStartStrategy,
@@ -29,7 +30,8 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 	TSceneLayersId extends SceneLayersIdBase = SceneLayersIdBase,
 	TSceneChildrenId extends SceneChildIdBase = SceneChildIdBase,
 	TEvent extends EventBase = EventBase>
-	implements IStateEnterStrategy<TEvent>,
+	implements IStateAttachStrategy,
+			   IStateEnterStrategy<TEvent>,
 			   IStateStartStrategy,
 			   IStateStopStrategy,
 			   IStateExitStrategy {
@@ -50,21 +52,21 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 		enterFinishHook?:() => Promise<void>,
 		exitStartHook?:() => Promise<void>
 	) {
-		this.sceneId = sceneId;
-		this._sceneLayers = sceneLayers;
-		this._sceneModules = sceneModules;
-		this._sceneManager = sceneManager;
+		this.sceneId          = sceneId;
+		this._sceneLayers     = sceneLayers;
+		this._sceneModules    = sceneModules;
+		this._sceneManager    = sceneManager;
 		this._enterFinishHook = enterFinishHook;
-		this._exitStartHook = exitStartHook;
+		this._exitStartHook   = exitStartHook;
+	}
+
+	async doAttach():Promise<void> {
+		this._scene = await this.showScene(this.sceneId, this._sceneLayers, this._sceneManager);
+		this.attachModulesTo(this._scene, this._sceneModules);
 	}
 
 	async doEnter(payload?:TEvent[keyof TEvent]):Promise<void> {
-		this._scene = await this.showScene(this.sceneId, this._sceneLayers, this._sceneManager);
-
-		this.attachModulesTo(this._scene, this._sceneModules);
-
 		await this.enterModules(this._sceneModules, payload);
-
 		await this._enterFinishHook?.();
 	}
 
@@ -78,14 +80,13 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 
 	async doExit():Promise<void> {
 		await this._exitStartHook?.();
-
 		await this.exitModules(this._sceneModules);
+	}
 
+	doDetach():void {
 		this.detachModules(this._scene, this._sceneModules);
-
 		this.destroyModules(this._sceneModules);
-
-		await this.hideScene(this._scene, this._sceneManager);
+		this.hideScene(this._scene, this._sceneManager);
 	}
 
 	protected async showScene(
@@ -154,12 +155,12 @@ export class StateContext<TSceneId extends SceneIdBase = SceneIdBase,
 		}
 	}
 
-	protected async hideScene(
+	protected hideScene(
 		scene:ISceneHost<TSceneLayersId, TSceneChildrenId>,
 		scenesManager:IScenesManager<TSceneId>
-	):Promise<void> {
+	):void {
 
-		await scenesManager.hide(scene);
+		scenesManager.hide(scene);
 	}
 
 	protected destroyModules(modules:HaveDestroyPhase[]):void {

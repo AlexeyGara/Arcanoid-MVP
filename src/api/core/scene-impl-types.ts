@@ -31,3 +31,10 @@ export interface ISceneImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChil
 	/** resize scene's root layers */
 	onResize?(resize:ResizeInfo):void;
 }
+
+export interface ISceneImplFactory<TSceneId extends SceneIdBase> {
+
+	createImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>(
+		sceneId:TSceneId
+	):ISceneImpl<TSceneLayersId, TSceneChildId>;
+}

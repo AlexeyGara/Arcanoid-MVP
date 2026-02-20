@@ -94,9 +94,9 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 		return scene;
 	}
 
-	async hide<TSceneLayersId extends SceneLayersIdBase>(
+	hide<TSceneLayersId extends SceneLayersIdBase>(
 		sceneHost:ISceneHost<TSceneLayersId, string>
-	):Promise<boolean> {
+	):boolean {
 
 		const scene = this._activeScenes.get(sceneHost.sceneId as TScenesId);
 		if(scene) {
@@ -112,13 +112,13 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 				this._cache(scene);
 			}
 			else {
-				await scene.destroy();
+				scene.destroy();
 			}
 
-			return Promise.resolve(true);
+			return true;
 		}
 
-		return Promise.resolve(false);
+		return false;
 	}
 
 	private async _getOrCreate<TSceneLayersId extends SceneLayersIdBase>(

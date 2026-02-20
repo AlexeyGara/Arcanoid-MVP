@@ -10,11 +10,21 @@
 import type { StateOverlayMode } from "core/fsm/state/StateOverlayMode";
 
 export interface IState<TCustomSTATEid extends STATEidBase, TEvents extends EventBase> {
+
 	/** Current state ID (name) */
 	readonly stateId:TCustomSTATEid;
 
 	/** The allowed overlay mode when combined with another state that will overlap the current one. */
 	readonly overlayMode:StateOverlayMode;
+
+	/** The flag for 'overlay mode' what this state should be started. */
+	readonly isOverlay:boolean;
+
+	/** The critical state: the only this state's own transitions are available to go.  */
+	readonly critical:boolean;
+
+	/** Prepare state: preload assets, create scene, attach module's views to scene */
+	attach():Promise<void>;
 
 	/** Prepare state to activate - create scene, preload assets, attach modules view to scene, add modules to gameLoop live-circle, apply payload-data and preactivate modules, start fade-in action */
 	enter(payload?:TEvents[keyof TEvents]):Promise<void>;
@@ -27,26 +37,29 @@ export interface IState<TCustomSTATEid extends STATEidBase, TEvents extends Even
 
 	/** Exit from state - Finish fade-out action, detach modules view from scene, remove modules from gameLoop live-circle */
 	exit():Promise<void>;
+
+	detach():void;
+}
+
+export interface IStateAttachStrategy {
+
+	doAttach():Promise<void>;
+
+	doDetach():void;
 }
 
 export interface IStateEnterStrategy<TEvents extends EventBase> {
 
 	doEnter(payload?:TEvents[keyof TEvents]):Promise<void>;
+
+	doExit():Promise<void>;
 }
 
 export interface IStateStartStrategy {
 
 	doStart():void;
-}
-
-export interface IStateStopStrategy {
 
 	doStop():void;
-}
-
-export interface IStateExitStrategy {
-
-	doExit():Promise<void>;
 }
 
 export type StateProvider<TCustomSTATEid extends STATEidBase, TEvents extends EventBase> = () => IState<TCustomSTATEid, TEvents>;
@@ -59,11 +72,15 @@ export type Transition<TSTATEid extends STATEidBase,
 	TEvents extends EventBase,
 	TContext extends ContextBase> = {
 	/**
-	 * StateId where transition started
-	 * @[WARNING]: Do not rename this field
+	 * State ID where transition starting.
+	 * <br/>**WARNING:** Do not rename this field!
 	 */
-	readonly fromStateId?:TSTATEid;
-	readonly toStateId:TSTATEid;
+	readonly fromStateId:TSTATEid;
+	/**
+	 * State ID where transition ending.
+	 * If not set, the current state should exit from _**'overlay'**_ mode without next state.
+	 */
+	readonly toStateId?:TSTATEid;
 	readonly onEvent:keyof TEvents;
 	/**
 	 * Guard for complete transition from state {@link fromStateId} to state {@link toStateId} by event {@link onEvent}
@@ -84,18 +101,28 @@ export type Transition<TSTATEid extends STATEidBase,
 	canInterrupt?:boolean;
 }
 
+/**
+ * Get strategy for overlay-transition to a new state.
+ * @param overlayMode Overlay mode of old (current) state.
+ */
 export type OverlayTransitionProvider<TStateID extends STATEidBase, TEvents extends EventBase>
 	= (overlayMode:StateOverlayMode) => ITransitionStrategy<TStateID, TEvents>;
 
 export interface ITransitionStrategy<TSTATEid extends STATEidBase,
 	TEvents extends EventBase> {
 
+	/**
+	 * Do transition to a new state
+	 * @param fromState
+	 * @param toState
+	 * @param eventPayload
+	 * @return A tuple: [new state, [actual overlay states]]
+	 */
 	doTransition(
-		currentState:IState<TSTATEid, TEvents>,
-		nextStateId:TSTATEid,
-		nextStateProvider:(stateId:TSTATEid) => IState<TSTATEid, TEvents> | null,
+		fromState:IState<TSTATEid, TEvents>,
+		toState:IState<TSTATEid, TEvents>,
 		eventPayload?:TEvents[keyof TEvents]
-	):Promise<IState<TSTATEid, TEvents>>;
+	):Promise<void>;
 }
 
 type TransitionResult = "success" | "blocked" | "interrupted";
@@ -134,7 +161,11 @@ export interface ICanStatesRegister<TSTATEid extends STATEidBase,
 export interface ICanStateChange<TSTATEid extends STATEidBase,
 	TEvents extends EventBase> {
 
-	readonly current:IState<TSTATEid, TEvents> | null;
+	readonly current:TSTATEid | null;
+
+	readonly overlays:ReadonlyArray<TSTATEid>;
+
+	readonly dominantState:TSTATEid | null;
 
 	init(stateId:TSTATEid, payload?:TEvents[keyof TEvents]):Promise<boolean>;
 
@@ -165,7 +196,7 @@ type FromStateFieldKey = "fromStateId" extends keyof Transition<STATEidBase, Eve
 type OtherFieldsKeys = Exclude<keyof Transition<STATEidBase, EventBase, ContextBase>, FromStateFieldKey>;
 
 type SingleFromStateField<TCustomSTATEid extends STATEidBase>
-	= { [P in FromStateFieldKey]:TCustomSTATEid | undefined };
+	= { [P in FromStateFieldKey]:TCustomSTATEid };
 
 type ExcludeFromStateField<TSTATEid extends STATEidBase,
 	TEvents extends EventBase,

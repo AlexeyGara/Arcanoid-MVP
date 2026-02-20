@@ -7,10 +7,7 @@
  * Last modified: 2026-02-19 22:06
  */
 
-import type {
-	IState,
-	ITransitionStrategy
-} from "@core-api/fsm-types";
+import type { ITransitionStrategy } from "@core-api/fsm-types";
 
 export class OverlayForbiddenStrategy<TSTATEid extends STATEidBase, TEvents extends EventBase>
 	implements ITransitionStrategy<TSTATEid, TEvents> {
@@ -18,10 +15,8 @@ export class OverlayForbiddenStrategy<TSTATEid extends STATEidBase, TEvents exte
 	constructor() {
 	}
 
-	async doTransition(
-		currentState:IState<TSTATEid, TEvents>,
-	):Promise<IState<TSTATEid, TEvents>> {
+	doTransition():Promise<void> {
 
-		return currentState;
+		return Promise.resolve();
 	}
 }

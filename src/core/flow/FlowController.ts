@@ -44,8 +44,8 @@ export abstract class FlowController<TSTATEid extends STATEidBase,
 		stateMachine:IStateMachine<TSTATEid, TEvents, TContext>,
 		statesFactory:IStatesFactory<TSTATEid, TEvents>
 	) {
-		this._eventBus = eventBus;
-		this._stateMachine = stateMachine;
+		this._eventBus      = eventBus;
+		this._stateMachine  = stateMachine;
 		this._statesFactory = statesFactory;
 		this.registerStatesAndTransitions(this._register);
 	}

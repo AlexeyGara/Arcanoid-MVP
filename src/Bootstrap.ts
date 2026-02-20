@@ -7,7 +7,7 @@
  * Last modified: 2026-02-16 19:48
  */
 
-import type { AppContext }  from "@app-api/app-types";
+import type { AppContext }   from "@app-api/app-types";
 import type {
 	IAudioPlayer,
 	IMusicManager,
@@ -33,11 +33,11 @@ import { GameLoop }          from "core/gameloop/GameLoop";
 import { ResizeManager }     from "core/services/ResizeManager";
 import { ActionManager }     from "core/systems/action/ActionManager";
 import { AnimationManager }  from "core/systems/animation/AnimationManager";
-import { AudioVoice }       from "core/systems/audio/AudioVoice";
-import { MusicManager }     from "core/systems/audio/MusicManager";
-import { SoundsManager }    from "core/systems/audio/SoundsManager";
-import { PauseManager }     from "core/systems/PauseManager";
-import { Platform }         from "./Platform";
+import { AudioVoice }        from "core/systems/audio/AudioVoice";
+import { MusicManager }      from "core/systems/audio/MusicManager";
+import { SoundsManager }     from "core/systems/audio/SoundsManager";
+import { PauseManager }      from "core/systems/PauseManager";
+import { Platform }          from "./Platform";
 
 export class Bootstrap {
 
@@ -54,11 +54,11 @@ export class Bootstrap {
 		onResizeForwarder:ResizeEventForwarder,
 		viewSizeProvider:ViewSizeProvider
 	) {
-		this._originAssetsSize = originAssetsSize;
-		this._appViewContainer = appViewContainer;
+		this._originAssetsSize      = originAssetsSize;
+		this._appViewContainer      = appViewContainer;
 		this._onFocusInOutForwarder = onFocusInOutForwarder;
-		this._onResizeForwarder = onResizeForwarder;
-		this._viewSizeProvider = viewSizeProvider;
+		this._onResizeForwarder     = onResizeForwarder;
+		this._viewSizeProvider      = viewSizeProvider;
 	}
 
 	async start():Promise<void> {
@@ -98,18 +98,25 @@ export class Bootstrap {
 		// application context
 		const appContext:AppContext = {
 
+			audio: {
+				globalAudioVoice: globalAudioVoice,
+				musicVoice:       globalMusicVolumeControl,
+				soundsVoice:      globalSoundsVolumeControl,
+				musicPlayer:      globalMusicManager
+			},
+
 			systems: {
 				pause:
-					this._providePauseManager(rootPauseManager),
+					   this._providePauseManager(rootPauseManager),
 				actions:
-					this._provideActionSystem(gameLoop, rootPauseManager,
-												   this._commonReleaseMethod(gameLoop)),
+					   this._provideActionSystem(gameLoop, rootPauseManager,
+												 this._commonReleaseMethod(gameLoop)),
 				animations:
-					this._provideAnimationSystem(gameLoop, rootPauseManager,
-													  this._commonReleaseMethod(gameLoop)),
+					   this._provideAnimationSystem(gameLoop, rootPauseManager,
+													this._commonReleaseMethod(gameLoop)),
 				sounds:
-					this._provideSoundSystem(gameLoop, rootPauseManager, globalSoundsVolumeControl,
-												   audioPlayerProvider, this._commonReleaseMethod(gameLoop)),
+					   this._provideSoundSystem(gameLoop, rootPauseManager, globalSoundsVolumeControl,
+												audioPlayerProvider, this._commonReleaseMethod(gameLoop)),
 				music: {
 					provide: ():IMusicManager => globalMusicManager,
 				}
@@ -132,7 +139,13 @@ export class Bootstrap {
 		gameLoop.start(Platform.getFrameRequester());
 
 		// start main flow
-		const appFlowControl = new AppFlowController();
+		const appFlowControl = new AppFlowController(appEventBus,
+													 null,
+													 null,
+													 null,
+													 null,
+													 appContext);
+		await appFlowControl.start();
 	}
 
 	private _providePauseManager = (rootPauseManager:IPauseManager):SystemsProvider['pauseManager'] => ({
@@ -150,8 +163,8 @@ export class Bootstrap {
 	});
 
 	private _provideActionSystem = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
-										 releaseMethod:(instance:object,
-														pauseManager:IPauseManager) => void
+									releaseMethod:(instance:object,
+												   pauseManager:IPauseManager) => void
 	):SystemsProvider['actionsManager'] => ({
 		provide(setName:string,
 				pauseManager?:IPauseManager
@@ -170,8 +183,8 @@ export class Bootstrap {
 	});
 
 	private _provideAnimationSystem = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
-											releaseMethod:(instance:object,
-														   pauseManager:IPauseManager) => void
+									   releaseMethod:(instance:object,
+													  pauseManager:IPauseManager) => void
 	):SystemsProvider['animationsManager'] => ({
 		provide(setName:string,
 				pauseManager?:IPauseManager
@@ -190,15 +203,15 @@ export class Bootstrap {
 	});
 
 	private _provideSoundSystem = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
-										 globalSoundsControl:VoiceUpdatable, audioPlayerProvider:() => IAudioPlayer,
-										 releaseMethod:(instance:object,
-														pauseManager:IPauseManager) => void
+								   globalSoundsControl:VoiceUpdatable, audioPlayerProvider:() => IAudioPlayer,
+								   releaseMethod:(instance:object,
+												  pauseManager:IPauseManager) => void
 	):SystemsProvider['soundsManager'] => ({
 		provide(setName:string,
 				pauseManager?:IPauseManager
 		):ReturnType<SystemsProvider['soundsManager']['provide']> {
 			pauseManager ||= rootPauseManager;
-			const voice = new AudioVoice(setName, globalSoundsControl);
+			const voice  = new AudioVoice(setName, globalSoundsControl);
 			const sounds = new SoundsManager(setName, voice, audioPlayerProvider);
 			// audio phase: add
 			gameLoop.add(sounds);

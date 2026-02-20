@@ -25,11 +25,11 @@ import type {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESceneStatus = {
-	NEW: 0,
+	NEW:        0,
 	PRELOADING: 1,
-	LOADED: 2,
-	CREATED: 3,
-	DESTROYED: -1
+	LOADED:     2,
+	CREATED:    3,
+	DESTROYED:  -1
 } as const;
 
 type ESceneStatus = typeof ESceneStatus[keyof typeof ESceneStatus];
@@ -70,10 +70,10 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		sceneImpl:ISceneImpl<TSceneLayersId, TSceneChildId>,
 		errorThrower:ErrorEventsEmitter,
 	) {
-		this.sceneId = sceneId;
-		this.sceneProps = props;
-		this._gameLoop = gameLoop;
-		this._sceneImpl = sceneImpl;
+		this.sceneId      = sceneId;
+		this.sceneProps   = props;
+		this._gameLoop    = gameLoop;
+		this._sceneImpl   = sceneImpl;
 		this.errorEmitter = errorThrower;
 	}
 
@@ -140,9 +140,9 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		}
 	}
 
-	async destroy():Promise<void> {
+	destroy():void {
 		if(this._status != ESceneStatus.DESTROYED) {
-			await this._sceneImpl.doDestroy();
+			void this._sceneImpl.doDestroy();
 			this._status = ESceneStatus.DESTROYED;
 		}
 	}

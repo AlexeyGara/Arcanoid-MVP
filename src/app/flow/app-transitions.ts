@@ -12,48 +12,74 @@ import type { AppEvent }              from "app/event/events";
 import { AppSTATEid }                 from "app/state/states";
 
 export const appTransitions:LinkedTransitionsList<AppSTATEid, AppEvent, AppContext> = {
+
 	main_menu: [{
-		fromStateId: AppSTATEid.MAIN_MENU, toStateId: AppSTATEid.LOADING_GAME,
-		onEvent:     'APP.GOTO_GAME'
+		onEvent:     'APP.GOTO_GAME',
+		fromStateId: AppSTATEid.MAIN_MENU,
+		toStateId:   AppSTATEid.LOADING_GAME,
 	}, {
-		fromStateId: AppSTATEid.MAIN_MENU, toStateId: AppSTATEid.SETTINGS,
-		onEvent:     'APP.SHOW_SETTINGS'
+		onEvent:     'APP.SHOW_SETTINGS',
+		fromStateId: AppSTATEid.MAIN_MENU,
+		toStateId:   AppSTATEid.SETTINGS,
 	}],
 
 	settings: [{
-		fromStateId: undefined, toStateId:AppSTATEid.MAIN_MENU,
-		onEvent: 'APP.SHOW_SETTINGS'
+		onEvent:     'APP.HIDE_SETTINGS',
+		fromStateId: AppSTATEid.SETTINGS,
+		toStateId:   undefined,
 	}],
 
 	loading_game: [{
-		fromStateId: AppSTATEid.LOADING_GAME, toStateId: AppSTATEid.GAME_MODE,
-		onEvent:     'APP.GAME_LOADED'
+		onEvent:     'APP.GAME_LOADED',
+		fromStateId: AppSTATEid.LOADING_GAME,
+		toStateId:   AppSTATEid.GAME_MODE,
 	}],
 
 	game: [{
-		fromStateId: AppSTATEid.GAME_MODE, toStateId: AppSTATEid.PAUSE_MODE,
-		onEvent:     'APP.GAME_PAUSE'
+		onEvent:     'APP.GAME_PAUSE',
+		fromStateId: AppSTATEid.GAME_MODE,
+		toStateId:   AppSTATEid.PAUSE_MODE,
 	}, {
-		fromStateId: AppSTATEid.GAME_MODE, toStateId: AppSTATEid.WIN_SCREEN,
-		onEvent:     'APP.GAME_SUCCESS'
+		onEvent:     'APP.GAME_FAIL',
+		fromStateId: AppSTATEid.GAME_MODE,
+		toStateId:   AppSTATEid.LOSE_MODE,
+	}, {
+		onEvent:     'APP.GAME_SUCCESS',
+		fromStateId: AppSTATEid.GAME_MODE,
+		toStateId:   AppSTATEid.WIN_SCREEN,
 	}],
 
 	pause_game: [{
-		fromStateId: AppSTATEid.PAUSE_MODE, toStateId: AppSTATEid.MAIN_MENU,
-		onEvent:     'APP.RETURN_MAIN_MENU'
+		onEvent:     'APP.GAME_RESUME',
+		fromStateId: AppSTATEid.PAUSE_MODE,
+		toStateId:   undefined,
 	}, {
-		fromStateId: AppSTATEid.TRAINING_MODE, toStateId: AppSTATEid.LOADING_TRAINING,
-		onEvent:     'APP.GOTO_TRAIN_LEVEL'
+		onEvent:     'APP.SHOW_SETTINGS',
+		fromStateId: AppSTATEid.PAUSE_MODE,
+		toStateId:   AppSTATEid.SETTINGS,
+	}, {
+		onEvent:     'APP.RETURN_MAIN_MENU',
+		fromStateId: AppSTATEid.PAUSE_MODE,
+		toStateId:   AppSTATEid.MAIN_MENU,
+	}],
+
+	lose_game: [{
+		onEvent:     'APP.RETURN_MAIN_MENU',
+		fromStateId: AppSTATEid.LOSE_MODE,
+		toStateId:   AppSTATEid.MAIN_MENU,
+	}, {
+		onEvent:     'APP.GOTO_GAME',
+		fromStateId: AppSTATEid.LOSE_MODE,
+		toStateId:   AppSTATEid.LOADING_GAME,
 	}],
 
 	win_screen: [{
-		fromStateId: AppSTATEid.WIN_SCREEN, toStateId: AppSTATEid.MAIN_MENU,
-		onEvent:     'APP.RETURN_MAIN_MENU'
+		onEvent:     'APP.RETURN_MAIN_MENU',
+		fromStateId: AppSTATEid.WIN_SCREEN,
+		toStateId:   AppSTATEid.MAIN_MENU,
 	}, {
-		fromStateId: AppSTATEid.WIN_SCREEN, toStateId: AppSTATEid.LOADING_MAP,
-		onEvent:     'APP.GOTO_MAP'
-	}, {
-		fromStateId: AppSTATEid.WIN_SCREEN, toStateId: AppSTATEid.LOADING_GAME,
-		onEvent:     'APP.GOTO_GAME_LEVEL'
+		onEvent:     'APP.GOTO_GAME',
+		fromStateId: AppSTATEid.WIN_SCREEN,
+		toStateId:   AppSTATEid.LOADING_GAME,
 	}]
 };

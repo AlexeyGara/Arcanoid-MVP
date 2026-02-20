@@ -19,39 +19,16 @@ export class OverlayInactiveStrategy<TSTATEid extends STATEidBase, TEvents exten
 	}
 
 	async doTransition(
-		currentState:IState<TSTATEid, TEvents>,
-		nextStateId:TSTATEid,
-		nextStateProvider:(stateId:TSTATEid) => IState<TSTATEid, TEvents>,
+		fromState:IState<TSTATEid, TEvents>,
+		toState:IState<TSTATEid, TEvents>,
 		eventPayload?:TEvents[keyof TEvents]
-	):Promise<IState<TSTATEid, TEvents>> {
+	):Promise<void> {
 
-		this.stopCurrentState(currentState);
+		fromState.stop();
 
-		const nextState = this.getNextState(nextStateId, nextStateProvider);
+		await toState.enter(eventPayload);
 
-		await this.enterNextState(nextState, eventPayload);
-
-		this.startNextState(nextState);
-
-		return nextState;
-	}
-
-	protected stopCurrentState(state:IState<TSTATEid, TEvents>):void {
-		state.stop();
-	}
-
-	protected getNextState(stateId:TSTATEid,
-						   stateProvider:(stateId:TSTATEid) => IState<TSTATEid, TEvents>):IState<TSTATEid, TEvents> {
-		return stateProvider(stateId);
-	}
-
-	protected async enterNextState(state:IState<TSTATEid, TEvents>,
-								   eventPayload?:TEvents[keyof TEvents]):Promise<void> {
-		await state.enter(eventPayload);
-	}
-
-	protected startNextState(state:IState<TSTATEid, TEvents>):void {
-		state.start();
+		toState.start();
 	}
 
 }

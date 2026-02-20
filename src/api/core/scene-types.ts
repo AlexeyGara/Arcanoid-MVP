@@ -49,7 +49,7 @@ export interface IScenesManagerControlled<TSceneId extends SceneIdBase,
 
 	disableInput():void;
 
-	destroy():Promise<void>;
+	destroy():void;
 }
 
 export type SceneObject<TSceneId extends SceneIdBase,
@@ -87,7 +87,7 @@ export interface IScenesManager<TSceneId extends SceneIdBase> {
 
 	hide<TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
 		scene:ISceneHost<TSceneLayersId, TViewsId>
-	):Promise<boolean>;
+	):boolean;
 
 	isCached(sceneId:TSceneId):boolean;
 }

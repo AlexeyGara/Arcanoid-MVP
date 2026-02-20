@@ -20,8 +20,11 @@ import { StateMachineHandleEventError } from "core/errors/flow/StateMachineHandl
 import { StateMachineTransitionError }  from "core/errors/flow/StateMachineTransitionError";
 import {
 	checkTransitionPermit,
+	findTransition,
+	resolveDominantState,
 	resolveTransitionStrategy
-}                                       from "core/fsm/fsm-utils";
+}                                       from "core/fsm/fsm-tools";
+import { OverlayStateClose }            from "core/fsm/strategy/OverlayStateClose";
 import { overlayStrategiesProvider }    from "core/fsm/strategy/strategies";
 import { TransitionStrategy }           from "core/fsm/strategy/TransitionStrategy";
 
@@ -31,26 +34,42 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 	implements ICanStateChange<TSTATEid, TEvents>,
 			   ICanStatesRegister<TSTATEid, TEvents, TContext> {
 
-	get current():IState<TSTATEid, TEvents> | null {
-		return this._current;
+	get current():TSTATEid | null {
+		return this._current?.stateId || null;
+	}
+
+	get overlays():ReadonlyArray<TSTATEid> {
+		return this._overlays.map((state) => state.stateId);
+	}
+
+	get dominantState():TSTATEid | null {
+		if(!this._current) {
+			return null;
+		}
+
+		return resolveDominantState(this._current, this._overlays).stateId;
 	}
 
 	private readonly _stateProviders:Map<TSTATEid, () => IState<TSTATEid, TEvents>>        = new Map();
 	private readonly _transitions:Map<TSTATEid, Transition<TSTATEid, TEvents, TContext>[]> = new Map();
-	private _transitionStrategy:ITransitionStrategy<TSTATEid, TEvents>;
-	private _overlayStrategyProvider:OverlayTransitionProvider<TSTATEid, TEvents>;
+	private readonly _transitionStrategy:ITransitionStrategy<TSTATEid, TEvents>;
+	private readonly _overlayStrategyProvider:OverlayTransitionProvider<TSTATEid, TEvents>;
+	private readonly _overlayCloseStrategy:ITransitionStrategy<TSTATEid, TEvents>;
 	private _onTransition?:Transition<TSTATEid, TEvents, TContext>;
-	private _current:IState<TSTATEid, TEvents> | null                                      = null;
+	private _current?:IState<TSTATEid, TEvents>;
+	private readonly _overlays:IState<TSTATEid, TEvents>[]                                 = [];
 	private readonly _context:TContext;
 
 	protected constructor(
 		context:TContext,
 		transitionStrategy?:ITransitionStrategy<TSTATEid, TEvents>,
-		overlayStrategyProvider?:OverlayTransitionProvider<TSTATEid, TEvents>
+		overlayStrategyProvider?:OverlayTransitionProvider<TSTATEid, TEvents>,
+		overlayCloseStrategy?:ITransitionStrategy<TSTATEid, TEvents>
 	) {
 		this._context                 = context;
 		this._transitionStrategy      = transitionStrategy || new TransitionStrategy();
 		this._overlayStrategyProvider = overlayStrategyProvider || overlayStrategiesProvider;
+		this._overlayCloseStrategy    = overlayCloseStrategy || new OverlayStateClose();
 	}
 
 	registerState<K extends TSTATEid>(stateId:K, stateProvider:() => IState<K, TEvents>):void {
@@ -105,7 +124,7 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 
 		await this._current.exit();
 
-		this._current = null;
+		delete this._current;
 	}
 
 	async handle(event:keyof TEvents,
@@ -115,16 +134,19 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 			throw new StateMachineHandleEventError(`State machine not initialized yet!`);
 		}
 
-		const transition = this._findTransition(event, this._current.stateId);
+		const transition = findTransition(event,
+										  this._current, this._overlays,
+										  this._transitions);
 		if(!transition) {
 			throw new StateMachineHandleEventError(`Transition for event '${String(event)}' not found.`);
 		}
 
-		const checkResult = checkTransitionPermit(this._current, event, transition,
+		const isPermitted = checkTransitionPermit(this._current, [...this._overlays],
+												  event, transition,
 												  this._stateProviders.has, this._context,
 												  this._onTransition);
-		if(checkResult !== true) {
-			return checkResult;
+		if(isPermitted !== true) {
+			return isPermitted;
 		}
 
 		if(this._onTransition) {
@@ -137,17 +159,28 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 		// do a specified action before transition starts
 		transition.action?.(this._context, payload);
 
+		const newState:IState<TSTATEid, TEvents> | undefined = transition.toStateId &&
+															   this._createState(transition.toStateId);
+
 		// transition block:
-		const transitionStrategy = resolveTransitionStrategy(this._current, transition,
+		const transitionStrategy = resolveTransitionStrategy(this._current, [...this._overlays],
+															 transition, newState,
 															 this._transitionStrategy,
 															 this._overlayStrategyProvider);
 		try {
-			/*this._current || this._overlays.push()*/ = await transitionStrategy.doTransition(
-				this._current,
-				transition.toStateId,
-				this._createState.bind(this),
-				payload
-			);
+			/*this._current || this._overlays.push()*/
+			const [newState, overlayStates] = await transitionStrategy.doTransition(this._current, [...this._overlays],
+																					transition.toStateId,
+																					this._createState.bind(this),
+																					payload);
+			if(isOverlayMode) {
+				this._overlays.push(newState);
+			}
+			else {
+				this._current = newState;
+			}
+			this._overlays.length = 0;
+			this._overlays.push(...overlayStates);
 		}
 		catch(e) {
 			throw new StateMachineTransitionError(transition.toStateId,
@@ -167,22 +200,6 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 												  `Cannot find state '${stateId}' provider! Possibly state '${stateId}' have not been registered at state machine.`);
 		}
 		return stateProvider();
-	}
-
-	private _findTransition<K extends TSTATEid>(
-		event:keyof TEvents,
-		fromStateId:K
-	):TransitionWithLinkedFromStateField<K, TSTATEid, TEvents, TContext> | null {
-		const list = this._transitions.get(fromStateId);
-		if(!list || !list.length) {
-			return null;
-		}
-		for(const transition of list) {
-			if(transition.onEvent == event) {
-				return transition as TransitionWithLinkedFromStateField<K, TSTATEid, TEvents, TContext>;
-			}
-		}
-		return null;
 	}
 
 }
