@@ -89,16 +89,18 @@ export type SoundStarter = {
 
 	play(sound:ISound & CanBePlayed & CanBePaused & MasterVoiceControlled, loop?:boolean):
 		Promise<OnFinishResult | false>;
+
+	stopByAlias(soundAlias:AudioAssetID):boolean;
 }
 
 export interface ISoundManager extends GameLoopPhaseActor<typeof GameLoopPhase.AUDIO>,
 									   SoundStarter,
 									   VoiceUpdateListener {
 
-	stopByAlias(soundAlias:AudioAssetID):boolean;
-
 	stopAll():void;
 }
+
+export type SoundsPlayback = Readonly<[SoundStarter, IVolumeManager]>;
 
 export type MusicTrack = {
 	readonly alias:AudioAssetID;

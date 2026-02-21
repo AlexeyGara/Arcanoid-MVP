@@ -64,11 +64,11 @@ export type SceneObject<TSceneId extends SceneIdBase,
 export interface IScenesFactory<TSceneId extends SceneIdBase,
 	TSceneProps extends SceneIdPropsBase<TTargetRootLayerId>,
 	TTargetRootLayerId extends SceneLayersIdBase,
+	TSceneLayersId extends SceneLayersIdBase,
 	TSceneChildrenId extends SceneChildIdBase> {
 
-	createScene<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase>(
-		sceneId:TCustomSceneId,
-		sceneRootLayers:TSceneLayersId[]
+	createScene<TCustomSceneId extends TSceneId>(
+		sceneId:TCustomSceneId
 	):SceneObject<TCustomSceneId,
 		TSceneProps,
 		TTargetRootLayerId,
@@ -76,16 +76,15 @@ export interface IScenesFactory<TSceneId extends SceneIdBase,
 		TSceneChildrenId>;
 }
 
-export interface IScenesManager<TSceneId extends SceneIdBase> {
+export interface IScenesManager<TSceneId extends SceneIdBase, TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase> {
 
 	isActive(sceneId:TSceneId):boolean;
 
-	show<TCustomSceneId extends TSceneId, TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
-		sceneId:TCustomSceneId,
-		sceneLayers:TSceneLayersId[]
+	show<TCustomSceneId extends TSceneId>(
+		sceneId:TCustomSceneId
 	):Promise<ISceneHost<TSceneLayersId, TViewsId>>;
 
-	hide<TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
+	hide(
 		scene:ISceneHost<TSceneLayersId, TViewsId>
 	):boolean;
 

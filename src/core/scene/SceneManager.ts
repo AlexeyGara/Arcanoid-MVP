@@ -6,49 +6,54 @@
  * All rights reserved.
  */
 
-import type { ISceneImpl }      from "@core-api/scene-impl-types";
+import type { IViewsHolderImpl } from "@core-api/scene-impl-types";
 import type {
 	ISceneHost,
 	IScenesFactory,
 	IScenesManager,
 	IScenesManagerControlled,
 	SceneObject
-}                               from "@core-api/scene-types";
-import type { IResizeManager }  from "@core-api/service-types";
-import { ScenePreLoadingError } from "core/errors/flow/ScenePreLoadingError";
+}                                from "@core-api/scene-types";
+import type { IResizeManager }   from "@core-api/service-types";
+import { ScenePreLoadingError }  from "core/errors/flow/ScenePreLoadingError";
 
 export abstract class SceneManager<TScenesId extends SceneIdBase,
 	TSceneProps extends SceneIdPropsBase<TMainRootLayersId>,
+	TSceneLayersId extends SceneLayersIdBase,
+	TSceneChildrenId extends SceneChildIdBase,
 	TMainRootLayersId extends SceneLayersIdBase>
-	implements IScenesManager<TScenesId> {
 
-	private readonly _activeScenes:Map<TScenesId, SceneObject<TScenesId, TSceneProps, TMainRootLayersId, string, string>> = new Map();
-	private readonly _cachedScenes:Map<TScenesId, SceneObject<TScenesId, TSceneProps, TMainRootLayersId, string, string>> = new Map();
-	private readonly _scenesFactory:IScenesFactory<TScenesId, TSceneProps, TMainRootLayersId, string>;
+	implements IScenesManager<TScenesId, TSceneLayersId, TSceneChildrenId> {
+
+	private readonly _activeScenes:Map<TScenesId, SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId>> = new Map();
+	private readonly _cachedScenes:Map<TScenesId, SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId>> = new Map();
+	private readonly _scenesFactory:IScenesFactory<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId>;
 	private readonly _resizeManager:IResizeManager;
-	private readonly _rooSceneImpl:ISceneImpl<TMainRootLayersId, TScenesId>;
+	private readonly _rootContainerImpl:IViewsHolderImpl<TMainRootLayersId, TScenesId>;
 
 	protected constructor(
-		factory:IScenesFactory<TScenesId, TSceneProps, TMainRootLayersId, string>,
-		rootSceneImpl:ISceneImpl<TMainRootLayersId, TScenesId>,
+		factory:IScenesFactory<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId>,
+		rootContainerImpl:IViewsHolderImpl<TMainRootLayersId, TScenesId>,
 		resizeManager:IResizeManager,
 	) {
-		this._scenesFactory = factory;
-		this._resizeManager = resizeManager;
-		this._rooSceneImpl = rootSceneImpl;
+		this._scenesFactory     = factory;
+		this._resizeManager     = resizeManager;
+		this._rootContainerImpl = rootContainerImpl;
 	}
 
+	@final
 	isActive(sceneId:TScenesId):boolean {
 
 		return this._activeScenes.has(sceneId);
 	}
 
+	@final
 	isCached(sceneId:TScenesId):boolean {
 
 		return this._cachedScenes.has(sceneId);
 	}
 
-	private _cache(scene:SceneObject<TScenesId, TSceneProps, TMainRootLayersId, string, string>):void {
+	private _cache(scene:SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId>):void {
 
 		if(this._cachedScenes.has(scene.sceneId)) {
 			return;
@@ -57,7 +62,7 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 		this._cachedScenes.set(scene.sceneId, scene);
 	}
 
-	private _getFromCache(sceneId:TScenesId):SceneObject<TScenesId, TSceneProps, TMainRootLayersId, string, string> | null {
+	private _getFromCache(sceneId:TScenesId):SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId> | null {
 
 		const scene = this._cachedScenes.get(sceneId);
 		if(scene) {
@@ -69,17 +74,22 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 		return null;
 	}
 
-	async show<TCustomSceneId extends TScenesId, TSceneLayersId extends SceneLayersIdBase>(
-		sceneId:TCustomSceneId,
-		sceneLayers:TSceneLayersId[]
-	):Promise<ISceneHost<TSceneLayersId, string>> {
+	@final
+	async show<TCustomSceneId extends TScenesId>(
+		sceneId:TCustomSceneId
+	):Promise<ISceneHost<TSceneLayersId, TSceneChildrenId>> {
 
 		let scene = this._activeScenes.get(sceneId);
 		if(scene) {
 			return scene;
 		}
 
-		scene = await this._getOrCreate(sceneId, sceneLayers);
+		if(this.isCached(sceneId)) {
+			scene = this._getFromCache(sceneId)!;
+		}
+		else {
+			scene = await this._create(sceneId);
+		}
 
 		this._addToRoot(scene);
 
@@ -94,8 +104,9 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 		return scene;
 	}
 
-	hide<TSceneLayersId extends SceneLayersIdBase>(
-		sceneHost:ISceneHost<TSceneLayersId, string>
+	@final
+	hide<TSceneLayersId extends SceneLayersIdBase, TViewsId extends SceneChildIdBase>(
+		sceneHost:ISceneHost<TSceneLayersId, TViewsId>
 	):boolean {
 
 		const scene = this._activeScenes.get(sceneHost.sceneId as TScenesId);
@@ -121,17 +132,11 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 		return false;
 	}
 
-	private async _getOrCreate<TSceneLayersId extends SceneLayersIdBase>(
-		sceneId:TScenesId,
-		sceneLayers:TSceneLayersId[]
-	):Promise<SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, string>> {
+	private async _create(
+		sceneId:TScenesId
+	):Promise<SceneObject<TScenesId, TSceneProps, TMainRootLayersId, TSceneLayersId, TSceneChildrenId>> {
 
-		let scene = this._getFromCache(sceneId);
-		if(scene) {
-			return scene;
-		}
-
-		scene = this._scenesFactory.createScene(sceneId, sceneLayers);
+		const scene = this._scenesFactory.createScene(sceneId);
 
 		if(!scene.sceneProps.boot_preload) {
 			const preloadSuccess = await scene.preload();
@@ -147,12 +152,12 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 
 	private _addToRoot(scene:IScenesManagerControlled<TScenesId, TSceneProps, TMainRootLayersId>):boolean {
 
-		return this._rooSceneImpl.addToLayer(scene.sceneId, scene.targetLayerId);
+		return this._rootContainerImpl.addToLayer(scene.sceneId, scene.targetLayerId);
 	}
 
 	private _removeFromRoot(scene:IScenesManagerControlled<TScenesId, TSceneProps, TMainRootLayersId>):void {
 
-		if(this._rooSceneImpl.removeFromLayer(scene.sceneId, scene.targetLayerId)) {
+		if(this._rootContainerImpl.removeFromLayer(scene.sceneId, scene.targetLayerId)) {
 			return;
 		}
 
@@ -162,7 +167,7 @@ export abstract class SceneManager<TScenesId extends SceneIdBase,
 		);
 		//);
 
-		this._rooSceneImpl.removeFromParent(scene.sceneId);
+		this._rootContainerImpl.removeFromParent(scene.sceneId);
 	}
 
 }

@@ -9,13 +9,16 @@
 
 import type { ITransitionStrategy } from "@core-api/fsm-types";
 
-export class OverlayForbiddenStrategy<TSTATEid extends STATEidBase, TEvents extends EventBase>
+export class OverlayForbidden<TSTATEid extends STATEidBase, TEvents extends EventBase>
+
 	implements ITransitionStrategy<TSTATEid, TEvents> {
 
 	constructor() {
 	}
 
 	doTransition():Promise<void> {
+
+		// nothing to do
 
 		return Promise.resolve();
 	}

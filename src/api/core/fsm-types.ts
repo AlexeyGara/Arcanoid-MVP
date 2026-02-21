@@ -7,9 +7,11 @@
  * Last modified: 2026-02-18 09:17
  */
 
+import type { CanBePaused }      from "@core-api/system-types";
 import type { StateOverlayMode } from "core/fsm/state/StateOverlayMode";
 
-export interface IState<TCustomSTATEid extends STATEidBase, TEvents extends EventBase> {
+export interface IState<TCustomSTATEid extends STATEidBase, TEvents extends EventBase>
+	extends CanBePaused {
 
 	/** Current state ID (name) */
 	readonly stateId:TCustomSTATEid;
@@ -27,7 +29,7 @@ export interface IState<TCustomSTATEid extends STATEidBase, TEvents extends Even
 	attach():Promise<void>;
 
 	/** Prepare state to activate - create scene, preload assets, attach modules view to scene, add modules to gameLoop live-circle, apply payload-data and preactivate modules, start fade-in action */
-	enter(payload?:TEvents[keyof TEvents]):Promise<void>;
+	enter(payload:TEvents[keyof TEvents]):Promise<void>;
 
 	/** Activate modules - finish fade-in action, activate controls, inputs, animations, etc. */
 	start():void;
@@ -50,7 +52,7 @@ export interface IStateAttachStrategy {
 
 export interface IStateEnterStrategy<TEvents extends EventBase> {
 
-	doEnter(payload?:TEvents[keyof TEvents]):Promise<void>;
+	doEnter(payload:TEvents[keyof TEvents]):Promise<void>;
 
 	doExit():Promise<void>;
 }
@@ -113,15 +115,15 @@ export interface ITransitionStrategy<TSTATEid extends STATEidBase,
 
 	/**
 	 * Do transition to a new state
-	 * @param fromState
-	 * @param toState
-	 * @param eventPayload
+	 * @param fromStates States that will be exited, stopped or paused.
+	 * @param toState New state that will be started.
+	 * @param eventPayload Payload to a new state.
 	 * @return A tuple: [new state, [actual overlay states]]
 	 */
 	doTransition(
-		fromState:IState<TSTATEid, TEvents>,
+		fromStates:IState<TSTATEid, TEvents>[],
 		toState:IState<TSTATEid, TEvents>,
-		eventPayload?:TEvents[keyof TEvents]
+		eventPayload:TEvents[keyof TEvents]
 	):Promise<void>;
 }
 
@@ -161,15 +163,15 @@ export interface ICanStatesRegister<TSTATEid extends STATEidBase,
 export interface ICanStateChange<TSTATEid extends STATEidBase,
 	TEvents extends EventBase> {
 
-	readonly current:TSTATEid | null;
+	readonly baseState:TSTATEid | null;
 
-	readonly overlays:ReadonlyArray<TSTATEid>;
+	readonly overlayStates:ReadonlyArray<TSTATEid>;
 
 	readonly dominantState:TSTATEid | null;
 
-	init(stateId:TSTATEid, payload?:TEvents[keyof TEvents]):Promise<boolean>;
+	init(stateId:TSTATEid, payload:TEvents[keyof TEvents]):Promise<boolean>;
 
-	handle(event:keyof TEvents, payload?:TEvents[keyof TEvents]):Promise<HandleEventTransitionResult<TSTATEid>>;
+	handle(event:keyof TEvents, payload:TEvents[keyof TEvents]):Promise<HandleEventTransitionResult<TSTATEid>>;
 
 	destroy():Promise<void>;
 }

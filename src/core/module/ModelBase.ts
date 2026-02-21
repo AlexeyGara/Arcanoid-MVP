@@ -12,12 +12,22 @@ import type {
 	LightWeightModelBase
 } from "@core-api/module-types";
 
-export abstract class ModelBase<TModelDTO extends LightWeightModelBase = LightWeightModelBase> implements IModel<TModelDTO> {
+export abstract class ModelBase<TModelDTO extends LightWeightModelBase = LightWeightModelBase>
 
-	abstract readonly destroyed:boolean;
+	implements IModel<TModelDTO> {
+
+	@final
+	readonly destroyed:boolean = false;
 
 	abstract modelDTO:DeepReadonly<TModelDTO>;
 
-	abstract destroy():void;
+	@final
+	destroy():void {
+		this.doDestroy?.();
+
+		(this.destroyed as Writeable<boolean>) = true;
+	}
+
+	protected abstract doDestroy?():void;
 
 }

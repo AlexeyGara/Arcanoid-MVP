@@ -12,6 +12,7 @@ import type {
 	HaveActivePhase,
 	HaveEnterPhase
 }                                from "@core-api/module-types";
+import type { CanBePaused }      from "@core-api/system-types";
 import type { StateContext }     from "core/fsm/state/StateContext";
 import type { StateOverlayMode } from "core/fsm/state/StateOverlayMode";
 
@@ -29,9 +30,16 @@ const EStateStatus = {
 type EStateStatus = typeof EStateStatus[keyof typeof EStateStatus];
 
 export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents extends EventBase>
+
 	implements IState<TCustomSTATEid, TEvents> {
 
+	@final
 	readonly stateId:TCustomSTATEid;
+
+	@final
+	get paused():boolean {
+		return this._pauseManager.paused;
+	}
 
 	abstract readonly overlayMode:StateOverlayMode;
 
@@ -39,6 +47,7 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 
 	abstract readonly critical:boolean;
 
+	private readonly _pauseManager:CanBePaused;
 	private readonly _modules:Array<HaveActivePhase & HaveEnterPhase<TEvents>>;
 	private readonly _activePhaseModules:HaveActivePhase[];
 	private readonly _stateContext?:StateContext;
@@ -46,16 +55,29 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 
 	protected constructor(
 		stateId:TCustomSTATEid,
+		ownPauseManager:CanBePaused,
 		modules:Array<HaveActivePhase & HaveEnterPhase<TEvents>>,
 		onlyActivePhaseModules?:HaveActivePhase[],
 		stateContext?:StateContext
 	) {
 		this.stateId             = stateId;
+		this._pauseManager       = ownPauseManager;
 		this._modules            = modules;
 		this._activePhaseModules = onlyActivePhaseModules || [];
 		this._stateContext       = stateContext;
 	}
 
+	@final
+	pause():void {
+		this._pauseManager.pause();
+	}
+
+	@final
+	resume():void {
+		this._pauseManager.resume();
+	}
+
+	@final
 	async attach():Promise<void> {
 		if(this._status != EStateStatus.CREATED) {
 			logger.warn(
@@ -70,7 +92,8 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 		this._status = EStateStatus.ATTACHED;
 	}
 
-	async enter(payload?:TEvents[keyof TEvents]):Promise<void> {
+	@final
+	async enter(payload:TEvents[keyof TEvents]):Promise<void> {
 		if(this._status != EStateStatus.ATTACHED) {
 			logger.warn(
 				`[State] state "${this.stateId}" has status '${this._status}' and cannot be entered!`);
@@ -80,14 +103,14 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 		this._status = EStateStatus.ENTERING;
 
 		await Promise.all([
-							  this._stateContext?.doEnter(),
+							  this._stateContext?.doEnter(payload),
 							  this.doEnter(payload)
 						  ]).then();
 
 		this._status = EStateStatus.ENTERED;
 	}
 
-	protected doEnter(payload?:TEvents[keyof TEvents]):Promise<void> {
+	protected doEnter(payload:TEvents[keyof TEvents]):Promise<void> {
 		const modulesStartWaiters:Promise<void>[] = [];
 
 		for(const module of this._modules) {
@@ -97,6 +120,7 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 		return Promise.all(modulesStartWaiters).then();
 	}
 
+	@final
 	start():void {
 		if(this._status != EStateStatus.ENTERED) {
 			logger.warn(
@@ -119,6 +143,7 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 		}
 	}
 
+	@final
 	stop():void {
 		if(this._status != EStateStatus.ACTIVE) {
 			logger.warn(
@@ -141,6 +166,7 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 		}
 	}
 
+	@final
 	async exit():Promise<void> {
 		if(this._status != EStateStatus.ENTERED) {
 			logger.warn(`[State] state "${this.stateId}" has status '${this._status}' and cannot be exited!`);
@@ -167,6 +193,7 @@ export abstract class StateBase<TCustomSTATEid extends STATEidBase, TEvents exte
 		return Promise.all(modulesStartWaiters).then();
 	}
 
+	@final
 	detach():void {
 		if(this._status != EStateStatus.ATTACHED) {
 			logger.warn(`[State] state "${this.stateId}" has status '${this._status}' and cannot be detached!`);

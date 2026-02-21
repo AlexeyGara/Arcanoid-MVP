@@ -17,8 +17,10 @@ import type {
 	INodeUI
 }                                 from "@platform/engine/ui/nodes";
 
-export class PixiSceneImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>
-	implements ISceneImpl<TSceneLayersId, TSceneChildId> {
+export abstract class PixiSceneImpl<TSceneId extends SceneIdBase, TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>
+	implements ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId> {
+
+	readonly abstract sceneId:TSceneId;
 
 	readonly root:IHaveChildrenNodeUI & IInteractiveNodeUI;
 
@@ -30,7 +32,7 @@ export class PixiSceneImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChild
 	private readonly _sceneLayers:Map<TSceneLayersId, IHaveChildrenNodeUI & IDisposableNode>;
 	private readonly _sceneLayersAligner:INodeUIPosAligner;
 
-	constructor(
+	protected constructor(
 		assetsBundles:IAssetsBundle[],
 		nodeBuilder:INodesUIBuilder,
 		errorThrower:GlobalErrorEventsEmitter,

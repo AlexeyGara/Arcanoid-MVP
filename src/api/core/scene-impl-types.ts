@@ -10,14 +10,20 @@
 import type { HaveInteraction } from "@core-api/input-types";
 import type { ResizeInfo }      from "@core-api/service-types";
 
-export interface ISceneImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>
-	extends HaveInteraction {
+export interface IViewsHolderImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase> {
 
 	addToLayer(childId:TSceneChildId, targetLayerId:TSceneLayersId):boolean;
 
 	removeFromLayer(childId:TSceneChildId, targetLayerId:TSceneLayersId):boolean;
 
 	removeFromParent(childId:TSceneChildId):void;
+}
+
+export interface ISceneImpl<TSceneId extends SceneIdBase, TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>
+	extends IViewsHolderImpl<TSceneLayersId, TSceneChildId>,
+			HaveInteraction {
+
+	readonly sceneId:TSceneId;
 
 	/** preload all required own resources, etc. before creating scene */
 	doPreload(progressCallback?:(progress:number) => void):Promise<boolean>;
@@ -36,5 +42,5 @@ export interface ISceneImplFactory<TSceneId extends SceneIdBase> {
 
 	createImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>(
 		sceneId:TSceneId
-	):ISceneImpl<TSceneLayersId, TSceneChildId>;
+	):ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>;
 }

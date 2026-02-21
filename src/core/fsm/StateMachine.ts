@@ -24,30 +24,33 @@ import {
 	resolveDominantState,
 	resolveTransitionStrategy
 }                                       from "core/fsm/fsm-tools";
-import { OverlayStateClose }            from "core/fsm/strategy/OverlayStateClose";
-import { overlayStrategiesProvider }    from "core/fsm/strategy/strategies";
+import { OverlayClose }                 from "core/fsm/strategy/OverlayClose";
+import {
+	overlayStrategiesProvider,
+	processStatesClosing
+}                                       from "core/fsm/strategy/strategies";
 import { TransitionStrategy }           from "core/fsm/strategy/TransitionStrategy";
 
 export abstract class StateMachine<TSTATEid extends STATEidBase,
 	TEvents extends EventBase,
 	TContext extends ContextBase>
+
 	implements ICanStateChange<TSTATEid, TEvents>,
 			   ICanStatesRegister<TSTATEid, TEvents, TContext> {
 
-	get current():TSTATEid | null {
-		return this._current?.stateId || null;
+	get baseState():TSTATEid | null {
+		return this._baseState?.stateId || null;
 	}
 
-	get overlays():ReadonlyArray<TSTATEid> {
-		return this._overlays.map((state) => state.stateId);
+	get overlayStates():ReadonlyArray<TSTATEid> {
+		return [...this._overlayStates].map((state) => state.stateId);
 	}
 
 	get dominantState():TSTATEid | null {
-		if(!this._current) {
+		if(!this._baseState) {
 			return null;
 		}
-
-		return resolveDominantState(this._current, this._overlays).stateId;
+		return resolveDominantState(this._baseState, [...this._overlayStates]).stateId;
 	}
 
 	private readonly _stateProviders:Map<TSTATEid, () => IState<TSTATEid, TEvents>>        = new Map();
@@ -56,8 +59,8 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 	private readonly _overlayStrategyProvider:OverlayTransitionProvider<TSTATEid, TEvents>;
 	private readonly _overlayCloseStrategy:ITransitionStrategy<TSTATEid, TEvents>;
 	private _onTransition?:Transition<TSTATEid, TEvents, TContext>;
-	private _current?:IState<TSTATEid, TEvents>;
-	private readonly _overlays:IState<TSTATEid, TEvents>[]                                 = [];
+	private _baseState?:IState<TSTATEid, TEvents>;
+	private readonly _overlayStates:Set<IState<TSTATEid, TEvents>>                         = new Set();
 	private readonly _context:TContext;
 
 	protected constructor(
@@ -69,7 +72,7 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 		this._context                 = context;
 		this._transitionStrategy      = transitionStrategy || new TransitionStrategy();
 		this._overlayStrategyProvider = overlayStrategyProvider || overlayStrategiesProvider;
-		this._overlayCloseStrategy    = overlayCloseStrategy || new OverlayStateClose();
+		this._overlayCloseStrategy    = overlayCloseStrategy || new OverlayClose();
 	}
 
 	registerState<K extends TSTATEid>(stateId:K, stateProvider:() => IState<K, TEvents>):void {
@@ -96,9 +99,9 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 		}
 	}
 
-	async init(stateId:TSTATEid, payload?:TEvents[keyof TEvents]):Promise<boolean> {
-		if(this._current) {
-			return this._current.stateId == stateId;
+	async init(stateId:TSTATEid, payload:TEvents[keyof TEvents]):Promise<boolean> {
+		if(this._baseState) {
+			return this._baseState.stateId == stateId;
 		}
 
 		const initialState = this._createState(stateId);
@@ -106,44 +109,44 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 			return false;
 		}
 
-		await initialState.enter(payload);
+		await this._transitionStrategy.doTransition([],
+													initialState,
+													payload);
 
-		initialState.start();
-
-		this._current = initialState;
+		this._baseState = initialState;
 
 		return true;
 	}
 
 	async destroy():Promise<void> {
-		if(!this._current) {
+		if(!this._baseState) {
 			return;
 		}
 
-		this._current.stop();
+		await processStatesClosing([...[...this._overlayStates].reverse(), this._baseState]);
 
-		await this._current.exit();
-
-		delete this._current;
+		this._overlayStates.clear();
+		delete this._baseState;
 	}
 
 	async handle(event:keyof TEvents,
-				 payload?:TEvents[keyof TEvents]):Promise<HandleEventTransitionResult<TSTATEid>> {
+				 payload:TEvents[keyof TEvents]):Promise<HandleEventTransitionResult<TSTATEid>> {
 
-		if(!this._current) {
+		if(!this._baseState) {
 			throw new StateMachineHandleEventError(`State machine not initialized yet!`);
 		}
 
-		const transition = findTransition(event,
-										  this._current, this._overlays,
-										  this._transitions);
+		const [transition, fromState] = findTransition(event,
+													   this._baseState, [...this._overlayStates],
+													   this._transitions);
 		if(!transition) {
 			throw new StateMachineHandleEventError(`Transition for event '${String(event)}' not found.`);
 		}
 
-		const isPermitted = checkTransitionPermit(this._current, [...this._overlays],
+		const isPermitted = checkTransitionPermit(resolveDominantState(this._baseState, [...this._overlayStates]),
 												  event, transition,
-												  this._stateProviders.has, this._context,
+												  this._stateProviders.has,
+												  this._context,
 												  this._onTransition);
 		if(isPermitted !== true) {
 			return isPermitted;
@@ -154,43 +157,65 @@ export abstract class StateMachine<TSTATEid extends STATEidBase,
 			await Promise.resolve();
 		}
 
+		// start transition process -->
 		this._onTransition = transition;
 
-		// do a specified action before transition starts
+		// do a specified action before transition-block started:
 		transition.action?.(this._context, payload);
 
-		const newState:IState<TSTATEid, TEvents> | undefined = transition.toStateId &&
-															   this._createState(transition.toStateId);
+		// try to get target state to transit (possibly undefined):
+		let toState = transition.toStateId && this._createState(transition.toStateId);
 
-		// transition block:
-		const transitionStrategy = resolveTransitionStrategy(this._current, [...this._overlays],
-															 transition, newState,
+		// transition block: [
+		const transitionStrategy = resolveTransitionStrategy(fromState, toState,
 															 this._transitionStrategy,
-															 this._overlayStrategyProvider);
+															 this._overlayStrategyProvider,
+															 this._overlayCloseStrategy);
+
+		// resolve all states that must be exited and closed:
+		const fromStates = [fromState];
+		for(const overlayOnTop of [...this._overlayStates].reverse()) {
+			if(overlayOnTop == fromState) {
+				break;
+			}
+
+			fromStates.unshift(overlayOnTop);
+			this._overlayStates.delete(overlayOnTop);
+		}
+
+		// resolve the truly state to enter/restore:
+		if(!toState) {
+			toState = this._overlayStates.size
+					  ? [...this._overlayStates].pop()!
+					  : this._baseState;
+		}
+
+		// add new state to actives:
+		if(toState.overlayMode) {
+			this._overlayStates.add(toState);
+		}
+		else {
+			this._baseState = toState;
+		}
+
 		try {
-			/*this._current || this._overlays.push()*/
-			const [newState, overlayStates] = await transitionStrategy.doTransition(this._current, [...this._overlays],
-																					transition.toStateId,
-																					this._createState.bind(this),
-																					payload);
-			if(isOverlayMode) {
-				this._overlays.push(newState);
-			}
-			else {
-				this._current = newState;
-			}
-			this._overlays.length = 0;
-			this._overlays.push(...overlayStates);
+			await transitionStrategy.doTransition(fromStates, toState, payload);
 		}
 		catch(e) {
-			throw new StateMachineTransitionError(transition.toStateId,
-												  `The transition from '${this._current.stateId}' to '${transition.toStateId}' was permitted, but an error occurred!`,
+			throw new StateMachineTransitionError(toState.stateId,
+												  `The transition from '${fromState.stateId}' to '${toState.stateId}' was permitted, but an error occurred!`,
 												  e);
 		}
 
+		// ] transition block ended
+
+		// complete transition process <--
 		delete this._onTransition;
 
-		return { triggerEvent: String(event), result: "success", };
+		return {
+			triggerEvent: String(event),
+			result:       "success"
+		};
 	}
 
 	private _createState(stateId:TSTATEid):IState<TSTATEid, TEvents> {

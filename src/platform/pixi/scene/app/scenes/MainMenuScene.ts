@@ -7,16 +7,17 @@
  * Last modified: 2026-02-20 23:47
  */
 
-import { PixiSceneImpl } from "@pixi/scene/PixiSceneImpl";
-import type {
-	AppSceneID,
-	AppSceneLayers
-}                        from "app/scene/scenes";
+import { PixiSceneImpl }       from "@pixi/scene/PixiSceneImpl";
+import type { AppSceneLayers } from "app/scene/scenes";
+import { AppSceneID }          from "app/scene/scenes";
 
-type SceneLayerId = typeof AppSceneLayers[typeof AppSceneID.MENU][number];
+type SceneId = typeof AppSceneID.MENU;
+type SceneLayerId = typeof AppSceneLayers[SceneId];
 type SceneViewsId = '';
 
-export class MainMenuScene extends PixiSceneImpl<SceneLayerId, SceneViewsId> {
+export class MainMenuScene extends PixiSceneImpl<SceneId, SceneLayerId[number], SceneViewsId> {
+
+	readonly sceneId = AppSceneID.MENU;
 
 	
 }

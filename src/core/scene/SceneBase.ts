@@ -39,6 +39,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 	TTargetLayerId extends SceneLayersIdBase,
 	TSceneLayersId extends SceneLayersIdBase,
 	TSceneChildId extends SceneChildIdBase>
+
 	implements IScenesManagerControlled<TSceneId, TSceneProps, TTargetLayerId>,
 			   ISceneHost<TSceneLayersId, TSceneChildId>,
 			   IResizable {
@@ -46,20 +47,23 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 	readonly sceneId:TSceneId;
 	readonly sceneProps:TSceneProps;
 
+	@final
 	get cacheable():boolean {
 		return this.sceneProps.cacheable || false;
 	}
 
+	@final
 	get targetLayerId():TTargetLayerId {
 		return this.sceneProps.targetRootLayer;
 	}
 
+	@final
 	get destroyed():boolean {
 		return this._status == ESceneStatus.DESTROYED;
 	}
 
 	private readonly _gameLoop:IGameLoopUpdater;
-	private readonly _sceneImpl:ISceneImpl<TSceneLayersId, TSceneChildId>;
+	private readonly _sceneImpl:ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>;
 	protected readonly errorEmitter:ErrorEventsEmitter;
 	private _status:ESceneStatus = ESceneStatus.NEW;
 
@@ -67,7 +71,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		sceneId:TSceneId,
 		props:TSceneProps,
 		gameLoop:IGameLoopUpdater,
-		sceneImpl:ISceneImpl<TSceneLayersId, TSceneChildId>,
+		sceneImpl:ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>,
 		errorThrower:ErrorEventsEmitter,
 	) {
 		this.sceneId      = sceneId;
@@ -77,6 +81,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		this.errorEmitter = errorThrower;
 	}
 
+	@final
 	add(view:CanBeAddToScene<TSceneLayersId, TSceneChildId>):void {
 
 		if(this._sceneImpl.addToLayer(view.uniqueOwnId, view.targetLayerId)) {
@@ -87,6 +92,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 			`[Scene] cannot add view '${view.uniqueOwnId}' to layer '${view.targetLayerId}' of scene '${this.sceneId}'!`));
 	}
 
+	@final
 	remove(view:CanBeAddToScene<TSceneLayersId, TSceneChildId>):void {
 
 		if(this._sceneImpl.removeFromLayer(view.uniqueOwnId, view.targetLayerId)) {
@@ -102,18 +108,21 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		this._sceneImpl.removeFromParent(view.uniqueOwnId);
 	}
 
+	@final
 	addToUpdateLoop(...updatableList:IGameLoopUpdatable[]):void {
 		for(const updatable of updatableList) {
 			this._gameLoop.add(updatable);
 		}
 	}
 
+	@final
 	removeFromUpdateLoop(...updatableList:IGameLoopUpdatable[]):void {
 		for(const updatable of updatableList) {
 			this._gameLoop.remove(updatable);
 		}
 	}
 
+	@final
 	async preload():Promise<boolean> {
 		if(this._status != ESceneStatus.NEW) {
 			return false;
@@ -133,6 +142,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 
 	protected onPreloadProgress?(progress:number):void;
 
+	@final
 	async create():Promise<void> {
 		if(this._status == ESceneStatus.LOADED) {
 			await this._sceneImpl.doCreate();
@@ -140,6 +150,7 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		}
 	}
 
+	@final
 	destroy():void {
 		if(this._status != ESceneStatus.DESTROYED) {
 			void this._sceneImpl.doDestroy();
@@ -148,15 +159,18 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 	}
 
 	/** enable user inputs globally for current scene, etc. */
+	@final
 	enableInput():void {
 		this._sceneImpl.enableInteraction();
 	}
 
 	/** disable user inputs globally for current scene, etc. */
+	@final
 	disableInput():void {
 		this._sceneImpl.disableInteraction();
 	}
 
+	@final
 	onResize = (resize:ResizeInfo):void => {
 		this._sceneImpl.onResize?.(resize);
 	};

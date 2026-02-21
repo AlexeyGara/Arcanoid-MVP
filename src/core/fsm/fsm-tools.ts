@@ -85,11 +85,19 @@ export const getPrioritySortedStates = <TSTATEid extends STATEidBase, TEvents ex
 	return result;
 };
 
+/**
+ *
+ * @param event
+ * @param currState
+ * @param overlayStates
+ * @param registeredTransitions
+ * @return A tuple: [found transition, from state]
+ */
 export const findTransition = <TSTATEid extends STATEidBase, TEvents extends EventBase, TContext extends ContextBase>(
 	event:keyof TEvents,
 	currState:IState<TSTATEid, TEvents>, overlayStates:Readonly<IState<TSTATEid, TEvents>[]>,
 	registeredTransitions:Map<TSTATEid, Transition<TSTATEid, TEvents, TContext>[]>
-):[Transition<TSTATEid, TEvents, TContext>, IState<TSTATEid, TEvents>] | null => {
+):[Transition<TSTATEid, TEvents, TContext>, IState<TSTATEid, TEvents>] | [undefined, undefined] => {
 
 	const statesByPriority = getPrioritySortedStates(currState, overlayStates);
 
@@ -105,7 +113,7 @@ export const findTransition = <TSTATEid extends STATEidBase, TEvents extends Eve
 		}
 	}
 
-	return null;
+	return [undefined, undefined];
 };
 
 /**
@@ -193,7 +201,7 @@ export const checkTransitionPermit = <TSTATEid extends STATEidBase, TEvents exte
 /**
  * Resolve required transition strategy.
  * @param fromState Current state that should transition to a new.
- * @param newState
+ * @param toState
  * @param transitionStrategy Available transition strategy to a new state.
  * @param overlayStrategyProvider Available overlay strategies for add a new state.
  * @param closeOverlayStrategy
@@ -201,17 +209,17 @@ export const checkTransitionPermit = <TSTATEid extends STATEidBase, TEvents exte
  */
 export const resolveTransitionStrategy = <TSTATEid extends STATEidBase, TEvents extends EventBase>(
 	fromState:IState<TSTATEid, TEvents>,
-	newState:IState<TSTATEid, TEvents> | undefined,
+	toState:IState<TSTATEid, TEvents> | undefined,
 	transitionStrategy:ITransitionStrategy<TSTATEid, TEvents>,
 	overlayStrategyProvider:OverlayTransitionProvider<TSTATEid, TEvents>,
 	closeOverlayStrategy:ITransitionStrategy<TSTATEid, TEvents>
-):ITransitionStrategy<TSTATEid, TEvents> | null => {
+):ITransitionStrategy<TSTATEid, TEvents> => {
 
-	if(!newState) {/* current dominant state should be just closed */
+	if(!toState) {/* current dominant state should be just closed */
 		return closeOverlayStrategy;
 	}
 
-	if(newState.isOverlay) {
+	if(toState.isOverlay) {
 		return overlayStrategyProvider(fromState.overlayMode);
 	}
 

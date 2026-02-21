@@ -21,6 +21,23 @@ declare type ConstructableWithArgs<TClass, TArgs> = new (...args:TArgs) => TClas
 
 declare type OmitProps<T, K extends keyof T> = Pick<T, DiffOfProps<keyof T, K>>;
 
+declare function finalMethod(target:{
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	constructor:Function;
+}, propertyKey:PropertyKey, descriptor:PropertyDescriptor):PropertyDescriptor;
+
+declare function finalProperty(target:{
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	constructor:Function;
+}, propertyKey:PropertyKey):void;
+
+declare function final(target:{
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	constructor:Function;
+}, propertyKey:PropertyKey, descriptor?:PropertyDescriptor):void |
+															//@ts-expect-error force 'any' type
+															any;// eslint-disable-line @typescript-eslint/no-explicit-any
+
 declare function assertNever(value:never):never;
 
 declare const wait:(milliSeconds:number) => Promise<void>;
@@ -36,4 +53,7 @@ interface Global {
 
 	wait:typeof wait;
 
+	finalMethod:typeof finalMethod;
+	finalProperty:typeof finalProperty;
+	final:typeof final;
 }

@@ -16,10 +16,10 @@ import { Scene } from "core/scene/SceneBase";
 type SceneId = typeof AppSceneID.MENU;
 type SceneProps = AppScene[SceneId];
 type SceneTargetLayer = SceneProps["targetRootLayer"];
-type SceneLayersId = SceneProps["sceneLayers"][number];
+type SceneLayersId = SceneProps["sceneLayers"];
 type SceneViewsId = '';
 
-export class MainMenuScene extends Scene<SceneId, SceneProps, SceneTargetLayer, SceneLayersId, SceneViewsId> {
+export class MainMenuScene extends Scene<SceneId, SceneProps, SceneTargetLayer, SceneLayersId[number], SceneViewsId> {
 
 
 }
