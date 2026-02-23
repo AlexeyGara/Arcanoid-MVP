@@ -2,14 +2,15 @@
  * Copyright © 2026 Alexey Gara (alexey.gara@gmail.com). All rights reserved.
  * Project: Arcanoid-MVP
  * File: MainMenuScene.ts
- * Path: src/platform/pixi/scene/app/scenes/
+ * Path: src/platform/pixi/scene/app/scenes/mainmenu/
  * Author: alexeygara
- * Last modified: 2026-02-20 23:47
+ * Last modified: 2026-02-23 01:15
  */
 
-import { PixiSceneImpl }       from "@pixi/scene/PixiSceneImpl";
-import type { AppSceneLayers } from "app/scene/scenes";
-import { AppSceneID }          from "app/scene/scenes";
+import { PixiSceneImpl }            from "@pixi/scene/PixiSceneImpl";
+import type { RootLayersStructure } from "@platform/engine/ui";
+import type { AppSceneLayers }      from "app/scene/scenes";
+import { AppSceneID }               from "app/scene/scenes";
 
 type SceneId = typeof AppSceneID.MENU;
 type SceneLayerId = typeof AppSceneLayers[SceneId];

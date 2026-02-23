@@ -8,12 +8,11 @@
  */
 
 import type { ActionStarter }      from "@core-api/action-types";
-import type { IAnimationPlayer }   from "@core-api/animation-types";
 import type { SoundsPlayback }     from "@core-api/audio-types";
 import type { IDestroyable }       from "@core-api/base-types";
 import type { IGameLoopUpdatable } from "@core-api/gameloop-types";
 import type { ISceneHost }         from "@core-api/scene-types";
-import type { IResizable }         from "@core-api/service-types";
+import type { IView }              from "@core-api/view-types";
 import type { GameLoopPhase }      from "core/gameloop/GameLoopPhase";
 
 export type HaveActivePhase = {
@@ -93,27 +92,3 @@ type LightWeightModelDTO<T extends LWMPrimitiveData> = {
 };
 
 export type LightWeightModelBase<T extends LWMPrimitiveData = LWMPrimitiveData> = LightWeightModelDTO<T>
-
-export type CanBeAddToScene<TTargetLayerId extends SceneLayersIdBase, TOwnUniqueId extends SceneChildIdBase> = {
-
-	readonly uniqueOwnId:TOwnUniqueId;
-
-	readonly targetLayerId:TTargetLayerId;
-}
-
-export interface IView<TRootLayerId extends SceneLayersIdBase, TViewId extends SceneChildIdBase, TModelDTO extends LightWeightModelBase = LightWeightModelBase>
-	extends CanBeAddToScene<TRootLayerId, TViewId>,
-			IGameLoopUpdatable,
-			IResizable,
-			HaveDestroyPhase {
-
-	readonly updatePhase:typeof GameLoopPhase.VIEW;
-
-	onBeforeAttach?():void;
-
-	onAttached?(animationPlayer:IAnimationPlayer):void;
-
-	onDetached?():void;
-
-	onModelUpdated?(model:DeepReadonly<TModelDTO>):void;
-}

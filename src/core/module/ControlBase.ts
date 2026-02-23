@@ -17,9 +17,9 @@ import type {
 	ControlStrategy,
 	IControl,
 	IModel,
-	IView,
 	LightWeightModelBase
 }                             from "@core-api/module-types";
+import type { IView }         from "@core-api/view-types";
 import { GameLoopPhase }      from "core/gameloop/GameLoopPhase";
 
 export abstract class ControlBase<TEvents extends EventBase,

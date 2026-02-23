@@ -7,6 +7,7 @@
  * Last modified: 2026-02-23 00:11
  */
 
+import { getDPR }                from "@browser/index";
 import { InteractEventType }     from "@platform/engine/interraction";
 import { TouchInputManagerBase } from "core/input/TouchInputManagerBase";
 
@@ -17,15 +18,18 @@ type TouchTypeName = "pointer";
 export class BrowserTouchInputManager<TTouchEventEmitterId extends SceneChildIdBase>
 	extends TouchInputManagerBase<TouchTypeName, TTouchEventEmitterId> {
 
+	private readonly _dpr:number;
 	private readonly _defaultTarget:EventTarget;
 	private readonly _emittersProvider:(emitterId:TTouchEventEmitterId) => EventTarget;
 
 	constructor(
 		name:string,
+		useDPR:boolean,
 		emittersProvider:(emitterId:TTouchEventEmitterId) => EventTarget,
 		defaultTarget?:EventTarget,
 	) {
 		super(name);
+		this._dpr              = useDPR ? getDPR() : 1;
 		this._defaultTarget    = defaultTarget || window;
 		this._emittersProvider = emittersProvider;
 	}
@@ -88,8 +92,8 @@ export class BrowserTouchInputManager<TTouchEventEmitterId extends SceneChildIdB
 			const element = emitter as HTMLElement;
 			element.releasePointerCapture(pointerEvent.pointerId);
 
-			handleCallback(pointerEvent.clientX,
-						   pointerEvent.clientY);
+			handleCallback(pointerEvent.clientX * this._dpr,
+						   pointerEvent.clientY * this._dpr);
 		};
 
 		emitter.addEventListener(InteractEventType.POINTER_DOWN, pointerDownEventHandler);
@@ -104,11 +108,11 @@ export class BrowserTouchInputManager<TTouchEventEmitterId extends SceneChildIdB
 		const pointerMoveEventHandler = (e:Event):void => {
 			const pointerEvent = e as PointerEvent;
 
-			//const dx = pointerEvent.movementX;
-			//const dy = pointerEvent.movementY;
+			//const dx = pointerEvent.movementX * this._dpr;
+			//const dy = pointerEvent.movementY * this._dpr;
 
-			handleCallback(pointerEvent.clientX,
-						   pointerEvent.clientY);
+			handleCallback(pointerEvent.clientX * this._dpr,
+						   pointerEvent.clientY * this._dpr);
 		};
 
 		emitter.addEventListener(InteractEventType.POINTER_MOVE, pointerMoveEventHandler);
@@ -126,8 +130,8 @@ export class BrowserTouchInputManager<TTouchEventEmitterId extends SceneChildIdB
 			const element = emitter as HTMLElement;
 			element.releasePointerCapture(pointerEvent.pointerId);
 
-			handleCallback(pointerEvent.clientX,
-						   pointerEvent.clientY);
+			handleCallback(pointerEvent.clientX * this._dpr,
+						   pointerEvent.clientY * this._dpr);
 		};
 
 		emitter.addEventListener(InteractEventType.POINTER_UP, pointerEndEventHandler);

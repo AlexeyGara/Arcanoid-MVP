@@ -10,7 +10,7 @@
 import type { ResourceDescription } from "@platform/engine/resources";
 import type {
 	AlignMode,
-	RootLayerConfig
+	RootLayersStructure
 }                                   from "@platform/engine/ui/base-types";
 import type {
 	IDisposableNode,
@@ -53,8 +53,6 @@ export interface ICanAddStageToOwnRoot<TTargetLayerId extends SceneLayersIdBase>
 	 */
 	remove(view:IHaveStageNodeToAdd<TTargetLayerId>):void;
 }
-
-export type RootLayersStructure<TRootLayersId extends SceneLayersIdBase> = Readonly<RootLayerConfig<TRootLayersId>[]>;
 
 export interface INodesUIBuilder {
 	/**

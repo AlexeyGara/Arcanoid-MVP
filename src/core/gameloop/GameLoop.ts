@@ -32,13 +32,13 @@ export class GameLoop implements IGameLoopUpdater,
 		return this._paused;
 	}
 
-	private _running:boolean = false;
+	private _running:boolean           = false;
 	private _frameRequester?:IFrameRequester;
 	private readonly _gameTime:IScaledGameTime & IGameTimeAgent;
 	private readonly _updatableSystems = new Map<GameLoopPhase, IGameLoopUpdatable[]>();
 	private _renderMethod?:RenderMethod;
 	private _ignoreRenderPhase:boolean = false;
-	private _paused:boolean = false;
+	private _paused:boolean            = false;
 
 	constructor() {
 		this._gameTime = new GameTimeImpl(MAX_DELTA_TIME_THRESHOLD);
@@ -135,7 +135,7 @@ export class GameLoop implements IGameLoopUpdater,
 			const systems = this._updatableSystems.get(phase);
 			if(systems) {
 				for(const system of systems) {
-					system.update?.(this._gameTime.deltaTimeMs);
+					system.update?.(this._gameTime);
 				}
 			}
 		}

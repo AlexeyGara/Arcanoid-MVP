@@ -17,6 +17,7 @@ import type {
 	IKeyInputDispatcher,
 	KeyCode,
 	KeyInputData,
+	KeyInputManager,
 }                            from "@core-api/input-types";
 import type { AppSystem }    from "@core-api/system-types";
 import { GameLoopPhase }     from "core/gameloop/GameLoopPhase";
@@ -34,7 +35,8 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 	TKeyEventName extends string,
 	TKeyEventEmitterId extends SceneChildIdBase>
 
-	implements IKeyInputDispatcher<TKeyCode, TKeyEventEmitterId>,
+	implements KeyInputManager,
+			   IKeyInputDispatcher<TKeyCode, TKeyEventEmitterId>,
 			   GameLoopPhaseActor<typeof GameLoopPhase.INPUT>,
 			   IGameLoopUpdatable,
 			   AppSystem,
@@ -175,6 +177,23 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 		}
 	}
 
+	@final
+	unregisterAll():void {
+
+		this._dirty.clear();
+
+		this._map.clear();
+
+		for(const storeData of this._storage) {
+			for(const subs of storeData.subscribes.values()) {
+				for(const unsub of subs) {
+					unsub();
+				}
+			}
+		}
+		this._storage.length = 0;
+	}
+
 	private _onKeyDownHandler(storageData:StorageData<TKeyCode, TKeyEventEmitterId>):void {
 
 		this._dirty.add(storageData);
@@ -234,18 +253,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 	@final
 	destroy():void {
 
-		this._dirty.clear();
-
-		this._map.clear();
-
-		for(const storeData of this._storage) {
-			for(const subs of storeData.subscribes.values()) {
-				for(const unsub of subs) {
-					unsub();
-				}
-			}
-		}
-		this._storage.length = 0;
+		this.unregisterAll();
 
 		this.doDestroy?.();
 

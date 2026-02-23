@@ -11,20 +11,24 @@ import type {
 	AppSceneID,
 	AppSceneLayers,
 	AppSceneProps
-} from "app/scene/scenes";
+}                             from "app/scene/scenes";
+import type { AppSceneViews } from "app/scene/views";
 import type {
 	AppSTATEid,
 	AppStateIsCritical,
 	AppStateIsOverlay,
 	AppStateOverlayMode
-} from "app/state/states";
+}                             from "app/state/states";
 
-export type CustomStateId = typeof AppSTATEid.MAIN_MENU;
-export type CustomIsCritical = typeof AppStateIsCritical[CustomStateId];
-export type CustomIsOverlay = typeof AppStateIsOverlay[CustomStateId];
-export type CustomOverlayMode = typeof AppStateOverlayMode[CustomStateId];
-export type CustomSceneId = typeof AppSceneID.MENU;
-export type CustomSceneLayerId = typeof AppSceneLayers[CustomSceneId][number];
-export type CustomSceneViewId = SceneChildIdBase;
-export type CustomSceneProps = AppSceneProps<CustomSceneId>;
-export type CustomSceneTargetRootLayer = CustomSceneProps["targetRootLayer"];
+export type MainMenu_StateId = typeof AppSTATEid.MAIN_MENU;
+export type MainMenu_IsCritical = typeof AppStateIsCritical[MainMenu_StateId];
+export type MainMenu_IsOverlay = typeof AppStateIsOverlay[MainMenu_StateId];
+export type MainMenu_OverlayMode = typeof AppStateOverlayMode[MainMenu_StateId];
+
+export type MainMenu_SceneId = typeof AppSceneID.MENU;
+export type MainMenu_SceneLayerId = typeof AppSceneLayers[MainMenu_SceneId][number];
+export type MainMenu_SceneViewId = SceneChildIdBase;
+export type MainMenu_SceneProps = AppSceneProps<MainMenu_SceneId>;
+export type MainMenu_SceneTargetRootLayer = MainMenu_SceneProps["targetRootLayer"];
+
+export type Background_View = typeof AppSceneViews[MainMenu_SceneId]['background_view'];

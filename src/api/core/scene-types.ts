@@ -8,8 +8,8 @@
  */
 
 import type { IGameLoopUpdatable } from "@core-api/gameloop-types";
-import type { CanBeAddToScene }    from "@core-api/module-types";
 import type { IResizable }         from "@core-api/service-types";
+import type { CanBeAddToScene }    from "@core-api/view-types";
 
 export interface IViewsHolder<TTargetLayerId extends SceneLayersIdBase, TViewId extends SceneChildIdBase> {
 

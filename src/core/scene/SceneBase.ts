@@ -12,7 +12,6 @@ import type {
 	IGameLoopUpdatable,
 	IGameLoopUpdater
 }                                  from "@core-api/gameloop-types";
-import type { CanBeAddToScene }    from "@core-api/module-types";
 import type { ISceneImpl }         from "@core-api/scene-impl-types";
 import type {
 	ISceneHost,
@@ -22,6 +21,7 @@ import type {
 	IResizable,
 	ResizeInfo
 }                                  from "@core-api/service-types";
+import type { CanBeAddToScene }    from "@core-api/view-types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESceneStatus = {

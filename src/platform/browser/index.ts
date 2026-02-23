@@ -12,6 +12,8 @@ import type {
 	ViewSizeProvider
 } from "@core-api/service-types";
 
+export const isBrowser = ():boolean => typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
 const RESIZE_DEBOUNCE_TIME = 50;
 let resizeTimer:ReturnType<typeof setTimeout>;
 
@@ -24,11 +26,11 @@ export const resizeEventEmitter:ResizeEventForwarder = (receiver:() => void) => 
 
 export const viewSizeProvider:ViewSizeProvider = () => {
 	return {
-		x: 0,
-		y: 0,
-		width: window.innerWidth,//screen.availWidth//screen.width
+		x:      0,
+		y:      0,
+		width:  window.innerWidth,//screen.availWidth//screen.width
 		height: window.innerHeight,//screen.availHeight//screen.height
-		dpr: getDPR()
+		dpr:    getDPR()
 	};
 };
 

@@ -7,14 +7,13 @@
  * Last modified: 2026-01-22 11:26
  */
 
-import type { IAnimationPlayer } from "@core-api/animation-types";
-import type { GameTime }         from "@core-api/gameloop-types";
-import type {
-	IView,
-	LightWeightModelBase
-}                                from "@core-api/module-types";
-import type { ResizeInfo }       from "@core-api/service-types";
-import { GameLoopPhase }         from "core/gameloop/GameLoopPhase";
+import type { IAnimationPlayer }     from "@core-api/animation-types";
+import type { GameTime }             from "@core-api/gameloop-types";
+import type { LightWeightModelBase } from "@core-api/module-types";
+import type { ResizeInfo }           from "@core-api/service-types";
+import type { IViewImpl }            from "@core-api/view-impl-types";
+import type { IView }                from "@core-api/view-types";
+import { GameLoopPhase }             from "core/gameloop/GameLoopPhase";
 
 export abstract class ViewBase<TTargetLayerId extends SceneLayersIdBase,
 	TViewId extends SceneChildIdBase,
@@ -27,21 +26,63 @@ export abstract class ViewBase<TTargetLayerId extends SceneLayersIdBase,
 
 	abstract readonly uniqueOwnId:TViewId;
 
-	abstract readonly destroyed:boolean;
-
 	abstract readonly targetLayerId:TTargetLayerId;
 
-	protected constructor() {
+	abstract readonly destroyed:boolean;
+
+	abstract readonly fullyImplDispose:boolean;
+
+	private readonly _viewImplProvider?:(viewId:TViewId) => IViewImpl<TViewId>;
+	private _viewImpl?:IViewImpl<TViewId>;
+
+	protected constructor(
+		viewImplProvider?:(viewId:TViewId) => IViewImpl<TViewId>,
+	) {
+		this._viewImplProvider = viewImplProvider;
 	}
 
-	onBeforeAttach?():void;
+	onBeforeAttach():void {
+
+		this._viewImpl = this._viewImplProvider?.(this.uniqueOwnId);
+	}
 
 	onAttached?(animationPlayer:IAnimationPlayer):void;
 
-	onResize?(resizeInfo:ResizeInfo):void;
+	@final
+	onResize(resizeInfo:ResizeInfo):void {
+		if(this.destroyed) {
+			return;
+		}
 
-	abstract update(time:GameTime):void;
+		this._viewImpl?.doResize?.(resizeInfo);
+	}
 
-	abstract destroy():void;
+	@final
+	update(time:GameTime):void {
+		if(this.destroyed) {
+			return;
+		}
+
+		this.doUpdate?.(time);
+
+		this._viewImpl?.doUpdate?.(time.deltaTimeMs);
+	}
+
+	protected doUpdate?(time:GameTime):void;
+
+	@final
+	destroy():void {
+		if(this.destroyed) {
+			return;
+		}
+
+		this.doDestroy?.();
+
+		this._viewImpl?.doDestroy(this.fullyImplDispose);
+
+		(this.destroyed as Writeable<boolean>) = true;
+	}
+
+	protected doDestroy?():void;
 
 }

@@ -29,6 +29,8 @@ export const AppSceneLayers = {
 	[AppSceneID.LOSE]:     ["background", "content", "ui"],
 } as const;
 
+export type AppSceneLayersId<TSceneId extends AppSceneID> = typeof AppSceneLayers[TSceneId][number];
+
 export const AppRootLayers = {
 	APP_SERVICE_LEVEL:    ['app-tech-service-popup-layer', 4],
 	APP_POPUP_LEVEL:      ['app-popup-layer', 3],
@@ -90,9 +92,9 @@ type AppScenePropNames<CustomAppSceneId extends AppSceneID> = Exclude<keyof AppS
 
 export type AppSceneProps<CustomAppSceneId extends AppSceneID> = { [P in AppScenePropNames<CustomAppSceneId>]:AppScene[CustomAppSceneId][P] };
 
-export type AppSceneLayers<CustomAppSceneId extends AppSceneID> = AppScene[CustomAppSceneId]['sceneLayers'];
+//export type AppSceneLayersList<CustomAppSceneId extends AppSceneID> = AppScene[CustomAppSceneId]['sceneLayers'];
 
-export type AppSceneLayersIds<CustomAppSceneId extends AppSceneID> = AppSceneLayers<CustomAppSceneId>[number];
+//export type AppSceneLayersIds<CustomAppSceneId extends AppSceneID> = AppSceneLayers<CustomAppSceneId>[number];
 
 export type TAppScenePropsData = AppSceneProps<AppSceneID>;
 

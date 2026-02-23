@@ -180,6 +180,23 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 		}
 	}
 
+	@final
+	unregisterAll():void {
+
+		this._dirty.clear();
+
+		this._map.clear();
+
+		for(const storeData of this._storage) {
+			for(const subs of storeData.subscribes.values()) {
+				for(const unsub of subs) {
+					unsub();
+				}
+			}
+		}
+		this._storage.length = 0;
+	}
+
 	private _onTouchStartHandler(storageData:StorageData<TTouchType, TTouchEventEmitterId>,
 								 posX:number, posY:number):void {
 
@@ -256,18 +273,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 	@final
 	destroy():void {
 
-		this._dirty.clear();
-
-		this._map.clear();
-
-		for(const storeData of this._storage) {
-			for(const subs of storeData.subscribes.values()) {
-				for(const unsub of subs) {
-					unsub();
-				}
-			}
-		}
-		this._storage.length = 0;
+		this.unregisterAll();
 
 		this.doDestroy?.();
 

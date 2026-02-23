@@ -8,20 +8,16 @@
  */
 
 import type {
-	AppScene,
-	AppSceneID
-}                             from "app/scene/scenes";
-import type {
-	CustomSceneId,
-	CustomSceneLayerId,
-	CustomSceneProps,
-	CustomSceneTargetRootLayer
-} from "app/state/main-menu-state-connecting-types";
-import { Scene }              from "core/scene/SceneBase";
+	MainMenu_SceneId,
+	MainMenu_SceneLayerId,
+	MainMenu_SceneProps,
+	MainMenu_SceneTargetRootLayer
+}                from "app/state/main-menu-state-connecting-types";
+import { Scene } from "core/scene/SceneBase";
 
 type SceneViewsId = '';
 
-export class MainMenuScene extends Scene<CustomSceneId, CustomSceneProps, CustomSceneTargetRootLayer, CustomSceneLayerId, SceneViewsId> {
+export class MainMenuScene extends Scene<MainMenu_SceneId, MainMenu_SceneProps, MainMenu_SceneTargetRootLayer, MainMenu_SceneLayerId, SceneViewsId> {
 
 
 }

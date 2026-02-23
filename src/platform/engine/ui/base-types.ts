@@ -12,10 +12,16 @@ export type AlignMode = {
 	y:'center' | 'top' | 'bottom';
 };
 
-export type RootLayerConfig<TLayersId extends SceneLayersIdBase> = {
-	readonly layerId:TLayersId;
-	readonly pos?:Point<number> | AlignMode;
-	readonly pivot?:Point<number> | AlignMode;
+export type AlignPos = {
+	readonly x?:number | AlignMode['x'];
+	readonly y?:number | AlignMode['y'];
 };
 
-export type RootLayersStructure<TRootLayersId extends SceneLayersIdBase> = Readonly<RootLayerConfig<TRootLayersId>[]>;
+export type RootLayerConfig<TLayerId extends SceneLayersIdBase> = {
+	readonly [P in TLayerId]:{
+		readonly pos:AlignPos;
+		readonly pivot?:AlignPos;
+	};
+};
+
+export type RootLayersStructure<TRootLayersId extends SceneLayersIdBase> = RootLayerConfig<TRootLayersId>;

@@ -27,11 +27,11 @@ import type {
 	IControl,
 	IModel,
 	IModule,
-	IView,
 	LightWeightModelBase
 }                                  from "@core-api/module-types";
 import type { ISceneHost }         from "@core-api/scene-types";
 import type { IResizeManager }     from "@core-api/service-types";
+import type { IView }              from "@core-api/view-types";
 
 export class Module<TEvents extends EventBase,
 	TTargetLayerId extends SceneLayersIdBase,

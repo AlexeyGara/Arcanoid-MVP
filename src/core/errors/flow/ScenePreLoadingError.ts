@@ -7,12 +7,11 @@
  * Last modified: 2026-01-21 12:19
  */
 
-export class ScenePreLoadingError extends Error {
+import { SceneFlowError } from "core/errors/flow/SceneFlowError";
 
-	readonly resourcesForScene:SceneIdBase;
+export class ScenePreLoadingError extends SceneFlowError {
 
 	constructor(sceneId:SceneIdBase, message?:string) {
-		super(message);
-		this.resourcesForScene = sceneId;
+		super(sceneId, message);
 	}
 }

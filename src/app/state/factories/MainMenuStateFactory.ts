@@ -12,21 +12,21 @@ import type { IAppStateFactory } from "@app-api/state-types";
 import type { AppEvent }         from "app/event/events";
 import { AppSceneID }            from "app/scene/scenes";
 import type {
-	CustomSceneId,
-	CustomSceneLayerId,
-	CustomSceneViewId
+	MainMenu_SceneId,
+	MainMenu_SceneLayerId,
+	MainMenu_SceneViewId
 }                                from "app/state/main-menu-state-connecting-types";
 import { AppSTATEid }            from "app/state/states";
 import { StateContext }          from "core/fsm/state/StateContext";
 
-export class MainMenuStateFactory implements IAppStateFactory<CustomSceneId, CustomSceneLayerId, CustomSceneViewId> {
+export class MainMenuStateFactory implements IAppStateFactory<MainMenu_SceneId, MainMenu_SceneLayerId, MainMenu_SceneViewId> {
 
 	constructor() {
 	}
 
 	provideStateContext(
 		appContext:AppContext
-	):StateContext<AppSceneID, CustomSceneId, CustomSceneLayerId, CustomSceneViewId, AppEvent> {
+	):StateContext<AppSceneID, MainMenu_SceneId, MainMenu_SceneLayerId, MainMenu_SceneViewId, AppEvent> {
 
 		const [pauseManager, pauseManagerRelease] = appContext.systems.pause.provide(AppSTATEid.MAIN_MENU);
 

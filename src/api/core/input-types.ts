@@ -43,7 +43,10 @@ export interface IKeyInputDispatcher<TKeyCode extends KeyCode, TKeyEventEmitterI
 
 export type KeyInputManager<TKeyCode extends KeyCode = KeyCode, TKeyEventEmitterId extends SceneChildIdBase = SceneChildIdBase>
 	= GameLoopPhaseActor<typeof GameLoopPhase.INPUT> &
-	  IKeyInputDispatcher<TKeyCode, TKeyEventEmitterId>;
+	  IKeyInputDispatcher<TKeyCode, TKeyEventEmitterId> & {
+
+		  unregisterAll():void;
+	  };
 
 export type TouchType = "pointer";
 
@@ -75,4 +78,7 @@ export interface ITouchInputDispatcher<TTouchType extends TouchType, TTouchEvent
 
 export type TouchInputManager<TTouchType extends TouchType = TouchType, TTouchEventEmitterId extends SceneChildIdBase = SceneChildIdBase>
 	= GameLoopPhaseActor<typeof GameLoopPhase.INPUT> &
-	  ITouchInputDispatcher<TTouchType, TTouchEventEmitterId>;
+	  ITouchInputDispatcher<TTouchType, TTouchEventEmitterId> & {
+
+		  unregisterAll():void;
+	  };

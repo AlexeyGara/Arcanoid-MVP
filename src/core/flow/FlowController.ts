@@ -78,7 +78,7 @@ export abstract class FlowController<TSTATEid extends STATEidBase,
 
 	protected beforeStart?():Promise<void>;
 
-	protected abstract getInitialStateId():[stateId:TSTATEid, payload?:TEvents[keyof TEvents]];
+	protected abstract getInitialStateId():[stateId:TSTATEid, payload:TEvents[keyof TEvents]];
 
 	protected abstract onStart():void;
 
