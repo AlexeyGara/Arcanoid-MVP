@@ -1,0 +1,280 @@
+[
+  {
+    "name": "background-image_map",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-back_0000.png",
+    "shared": false
+  },
+  {
+    "name": "background-image_game",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-back_0000.png",
+    "shared": false
+  },
+  {
+    "name": "background-image_training",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-back_0000.png",
+    "shared": false
+  },
+
+  {
+    "name": "front-background-image_map",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-front-back_0000.png",
+    "shared": false
+  },
+  {
+    "name": "front-background-image_game",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-front-back_0000.png",
+    "shared": false
+  },
+  {
+    "name": "front-background-image_training",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-front-back_0000.png",
+    "shared": false
+  },
+
+  {
+    "name": "front-forward-image_map",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-front-front_0000.png",
+    "shared": false
+  },
+  {
+    "name": "front-forward-image_game",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-front-front_0000.png",
+    "shared": false
+  },
+  {
+    "name": "front-forward-image_training",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "sc-ld-front-front_0000.png",
+    "shared": false
+  },
+
+  {
+    "name": "front-flag-animation_map",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_prefix": "sc-ld-flag-anim_",
+    "shared": false
+  },
+  {
+    "name": "front-flag-animation_game",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_prefix": "sc-ld-flag-anim_",
+    "shared": false
+  },
+  {
+    "name": "front-flag-animation_training",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_prefix": "sc-ld-flag-anim_",
+    "shared": false
+  },
+
+  {
+    "name": "progress-label_map",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "[LOCALE]/sc-ld-label_0000.png",
+    "shared": false
+  },
+  {
+    "name": "progress-label_game",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "[LOCALE]/sc-ld-label_0000.png",
+    "shared": false
+  },
+  {
+    "name": "progress-label_training",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "texture_name": "[LOCALE]/sc-ld-label_0000.png",
+    "shared": false
+  },
+
+  {
+    "name": "progress-value-font_map",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "font_glyphs": {
+      "image/webp": "scenes/loading/Gabriola_webp.fnt",
+      "image/png": "scenes/loading/Gabriola_png.fnt"
+    },
+    "shared": false
+  },
+  {
+    "name": "progress-value-font_game",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "font_glyphs": {
+      "image/webp": "scenes/loading/Gabriola_webp.fnt",
+      "image/png": "scenes/loading/Gabriola_png.fnt"
+    },
+    "shared": false
+  },
+  {
+    "name": "progress-value-font_training",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "scenes/loading/atlas-1@800x620.webp",
+      "image/png": "scenes/loading/atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "scenes/loading/atlas-1-webp@800x620.json",
+      "image/png": "scenes/loading/atlas-1-png@800x620.json"
+    },
+    "font_glyphs": {
+      "image/webp": "scenes/loading/Gabriola_webp.fnt",
+      "image/png": "scenes/loading/Gabriola_png.fnt"
+    },
+    "font_face": "Gabriola",
+    "shared": false
+  },
+
+  {
+    "name": "help-hint-message-font",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "font/woff2": "/MessageFont.woff",
+      "font/ttf": "/MessageFont.ttf"
+    },
+    "font_color": "#FFFFFF",
+    "shared": true
+  }
+]

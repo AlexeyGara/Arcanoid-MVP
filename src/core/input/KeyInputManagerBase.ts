@@ -22,21 +22,19 @@ import type {
 import type { AppSystem }    from "@core-api/system-types";
 import { GameLoopPhase }     from "core/gameloop/GameLoopPhase";
 
-type StorageData<TKeyCode extends KeyCode, TKeyEventEmitterId extends SceneChildIdBase>
-	= Required<KeyInputData<TKeyCode>>
+type StorageData<TKeyEventEmitterId extends SceneChildIdBase>
+	= Required<KeyInputData>
 	  & {
-		  target:KeyInputData<TKeyCode>;
+		  target:KeyInputData;
 		  subscribes:Map<TKeyEventEmitterId | typeof notSetEventEmitter, Set<() => void>>;
 	  };
 
 const notSetEventEmitter = {};
 
-export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
-	TKeyEventName extends string,
-	TKeyEventEmitterId extends SceneChildIdBase>
+export abstract class KeyInputManagerBase<TKeyEventEmitterId extends SceneChildIdBase>
 
 	implements KeyInputManager,
-			   IKeyInputDispatcher<TKeyCode, TKeyEventEmitterId>,
+			   IKeyInputDispatcher<TKeyEventEmitterId>,
 			   GameLoopPhaseActor<typeof GameLoopPhase.INPUT>,
 			   IGameLoopUpdatable,
 			   AppSystem,
@@ -52,12 +50,9 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 
 	readonly paused:boolean = false;
 
-	protected abstract readonly keyDownEventName:TKeyEventName;
-	protected abstract readonly keyUpEventName:TKeyEventName;
-
-	private readonly _storage:StorageData<TKeyCode, TKeyEventEmitterId>[]  = [];
-	private readonly _map:Map<KeyInputData<TKeyCode>, number>              = new Map();
-	private readonly _dirty:Set<StorageData<TKeyCode, TKeyEventEmitterId>> = new Set();
+	private readonly _storage:StorageData<TKeyEventEmitterId>[]  = [];
+	private readonly _map:Map<KeyInputData, number>              = new Map();
+	private readonly _dirty:Set<StorageData<TKeyEventEmitterId>> = new Set();
 
 	protected constructor(
 		name:string,
@@ -76,7 +71,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 	}
 
 	@final
-	isKeyRegistered(inputDataStorage:KeyInputData<TKeyCode>, emitterId?:TKeyEventEmitterId):boolean {
+	isKeyRegistered(inputDataStorage:KeyInputData, emitterId?:TKeyEventEmitterId):boolean {
 		if(this.destroyed) {
 			return false;
 		}
@@ -98,7 +93,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 	}
 
 	@final
-	registerKey(inputDataStorage:KeyInputData<TKeyCode>, emitterId?:TKeyEventEmitterId):void {
+	registerKey(inputDataStorage:KeyInputData, emitterId?:TKeyEventEmitterId):void {
 		if(this.destroyed) {
 			return;
 		}
@@ -123,24 +118,27 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 
 		// keep unsubscriber for down-handler:
 		unsubscribers.add(
-			this.doRegistration(this.keyDownEventName, inputDataStorage.keyCode, emitterId,
-								() => this._onKeyDownHandler(storageData!))
+			this.doRegistrationKeyDown(inputDataStorage.keyCode, emitterId,
+									   () => this._onKeyDownHandler(storageData!))
 		);
 
 		// keep unsubscriber for up-handler:
 		unsubscribers.add(
-			this.doRegistration(this.keyUpEventName, inputDataStorage.keyCode, emitterId,
-								() => this._onKeyUpHandler(storageData!))
+			this.doRegistrationKeyUp(inputDataStorage.keyCode, emitterId,
+									 () => this._onKeyUpHandler(storageData!))
 		);
 	}
 
-	protected abstract doRegistration(eventName:TKeyEventName,
-									  keyCode:TKeyCode,
-									  emitterId:TKeyEventEmitterId | undefined,
-									  handleCallback:() => void):() => void;
+	protected abstract doRegistrationKeyDown(keyCode:KeyCode,
+											 emitterId:TKeyEventEmitterId | undefined,
+											 handleCallback:() => void):() => void;
+
+	protected abstract doRegistrationKeyUp(keyCode:KeyCode,
+										   emitterId:TKeyEventEmitterId | undefined,
+										   handleCallback:() => void):() => void;
 
 	@final
-	deregisterKey(inputDataStorage:KeyInputData<TKeyCode>, emitterId?:TKeyEventEmitterId):void {
+	deregisterKey(inputDataStorage:KeyInputData, emitterId?:TKeyEventEmitterId):void {
 		if(this.destroyed) {
 			return;
 		}
@@ -194,7 +192,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 		this._storage.length = 0;
 	}
 
-	private _onKeyDownHandler(storageData:StorageData<TKeyCode, TKeyEventEmitterId>):void {
+	private _onKeyDownHandler(storageData:StorageData<TKeyEventEmitterId>):void {
 
 		this._dirty.add(storageData);
 
@@ -210,7 +208,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 		storageData.downCounter++;
 	}
 
-	private _onKeyUpHandler(storageData:StorageData<TKeyCode, TKeyEventEmitterId>):void {
+	private _onKeyUpHandler(storageData:StorageData<TKeyEventEmitterId>):void {
 
 		this._dirty.add(storageData);
 
@@ -262,7 +260,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 
 	protected doDestroy?():void;
 
-	private _getStorageData(inputDataStorage:KeyInputData<TKeyCode>):StorageData<TKeyCode, TKeyEventEmitterId> | undefined {
+	private _getStorageData(inputDataStorage:KeyInputData):StorageData<TKeyEventEmitterId> | undefined {
 
 		const storageIndex = this._map.get(inputDataStorage);
 		if(storageIndex === undefined) {
@@ -277,7 +275,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 		return storageData;
 	}
 
-	private _createStorageData(inputDataStorage:KeyInputData<TKeyCode>):StorageData<TKeyCode, TKeyEventEmitterId> {
+	private _createStorageData(inputDataStorage:KeyInputData):StorageData<TKeyEventEmitterId> {
 
 		return {
 			keyCode: inputDataStorage.keyCode,
@@ -292,8 +290,7 @@ export abstract class KeyInputManagerBase<TKeyCode extends KeyCode,
 		};
 	}
 
-	private _alignLocalToTarget(localInput:StorageData<TKeyCode, TKeyEventEmitterId>,
-								targetInput:KeyInputData<TKeyCode>):void {
+	private _alignLocalToTarget(localInput:StorageData<TKeyEventEmitterId>, targetInput:KeyInputData):void {
 
 		if(targetInput.isDown !== undefined) {
 			targetInput.isDown = localInput.isDown;

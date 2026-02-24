@@ -20,11 +20,15 @@ export class AppGameService
 			   IGameRestoreService {
 
 	restoreGameProcess(key:StoredGameProcessKey):Promise<GameProcessDTO> {
-		return Promise.resolve(undefined);
+		//TODO: implement
+		logger.log(key);
+		return Promise.resolve("game-process-dto-json");
 	}
 
 	storeGameProcess(gameDataJson:GameProcessDTO):Promise<StoredGameProcessKey> {
-		return Promise.resolve(undefined);
+		//TODO: implement
+		logger.log(gameDataJson);
+		return Promise.resolve("game-process-store-key");
 	}
 
 }

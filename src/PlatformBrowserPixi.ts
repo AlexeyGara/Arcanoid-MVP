@@ -10,16 +10,22 @@
 import {
 	getDPR,
 	isBrowser
-}                                         from "@browser/index";
-import { WindowFrameRequester }           from "@browser/WindowFrameRequester";
-import type { IAudioPlayer }              from "@core-api/audio-types";
-import type { IFrameRequester }           from "@core-api/gameloop-types";
-import { PixiAssetsLoader }               from "@pixi/assets/PixiAssetsLoader";
-import { PixiAudioPlayer }                from "@pixi/audio/PixiAudioPlayer";
-import type { IAssetsLoader }             from "@platform/engine/assets";
-import type { INodesUIBuilder }           from "@platform/engine/ui";
-import { WorkerFrameRequester }           from "@web/WorkerFrameRequester";
-import { Application as PixiApplication } from "pixi.js";
+}                                from "@browser/index";
+import { WindowFrameRequester }  from "@browser/WindowFrameRequester";
+import type { IAudioPlayer }     from "@core-api/audio-types";
+import type { IFrameRequester }  from "@core-api/gameloop-types";
+import type { IViewsHolderImpl } from "@core-api/scene-impl-types";
+import { PixiAssetsLoader }      from "@pixi/assets/PixiAssetsLoader";
+import { PixiAudioPlayer }       from "@pixi/audio/PixiAudioPlayer";
+import type { PixiContainer }    from "@pixi/index";
+import { PixiApplication }    from "@pixi/index";
+import { PixiRootStageImpl }  from "@pixi/impl/PixiRootStageImpl";
+import type { IAssetsLoader } from "@platform/engine/assets";
+import { WorkerFrameRequester }  from "@web/WorkerFrameRequester";
+import type {
+	AppRootLayersId,
+	AppSceneID
+}                                from "app/scene/scenes";
 
 const DEFAULT_REQUEST_FRAME_WORKER_NAME = 'frame_request_worker.js';
 
@@ -37,10 +43,6 @@ export class PlatformBrowserPixi {
 
 	static provideAssetsLoader():IAssetsLoader {
 		return PlatformBrowserPixi._assetsLoader ||= new PixiAssetsLoader();
-	}
-
-	static provideNodeBuilder():INodesUIBuilder {
-
 	}
 
 	static getFrameRequester():IFrameRequester {
@@ -72,6 +74,15 @@ export class PlatformBrowserPixi {
 
 	static getPixiAppCanvas():HTMLCanvasElement {
 		return this._pixiApp.canvas;
+	}
+
+	static getPixiAppRoot():PixiContainer {
+		return this._pixiApp.stage;
+	}
+
+	static provideRootStageImpl():IViewsHolderImpl<AppRootLayersId, AppSceneID> {
+		return new PixiRootStageImpl(PlatformBrowserPixi.getPixiAppRoot(),
+									 null);
 	}
 
 }

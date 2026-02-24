@@ -19,11 +19,11 @@ export type HaveInteraction = {
 	disableInteraction():void;
 }
 
-export type KeyCode = string | number;
+export type KeyCode = string;
 
-export type KeyInputData<TKeyCode extends KeyCode> = {
+export type KeyInputData = {
 
-	readonly keyCode:TKeyCode;
+	readonly keyCode:KeyCode;
 
 	isDown?:boolean;
 	lastDownDurationMs?:number;
@@ -32,27 +32,27 @@ export type KeyInputData<TKeyCode extends KeyCode> = {
 	upCounter?:number;
 }
 
-export interface IKeyInputDispatcher<TKeyCode extends KeyCode, TKeyEventEmitterId extends SceneChildIdBase> {
+export interface IKeyInputDispatcher<TKeyEventEmitterId extends SceneChildIdBase> {
 
-	isKeyRegistered(inputDataStorage:KeyInputData<TKeyCode>, emitterId?:TKeyEventEmitterId):boolean;
+	isKeyRegistered(inputDataStorage:KeyInputData, emitterId?:TKeyEventEmitterId):boolean;
 
-	registerKey(inputDataStorage:KeyInputData<TKeyCode>, emitterId?:TKeyEventEmitterId):void;
+	registerKey(inputDataStorage:KeyInputData, emitterId?:TKeyEventEmitterId):void;
 
-	deregisterKey(inputDataStorage:KeyInputData<TKeyCode>, emitterId?:TKeyEventEmitterId):void;
+	deregisterKey(inputDataStorage:KeyInputData, emitterId?:TKeyEventEmitterId):void;
 }
 
-export type KeyInputManager<TKeyCode extends KeyCode = KeyCode, TKeyEventEmitterId extends SceneChildIdBase = SceneChildIdBase>
+export type KeyInputManager<TKeyEventEmitterId extends SceneChildIdBase = SceneChildIdBase>
 	= GameLoopPhaseActor<typeof GameLoopPhase.INPUT> &
-	  IKeyInputDispatcher<TKeyCode, TKeyEventEmitterId> & {
+	  IKeyInputDispatcher<TKeyEventEmitterId> & {
 
 		  unregisterAll():void;
 	  };
 
 export type TouchType = "pointer";
 
-export type TouchInputData<TTouchType extends TouchType> = {
+export type TouchInputData = {
 
-	readonly touchType:TTouchType;
+	readonly touchType:TouchType;
 
 	isContinue?:boolean;
 	lastContinueDurationMs?:number;
@@ -67,18 +67,18 @@ export type TouchInputData<TTouchType extends TouchType> = {
 	endY?:number;
 }
 
-export interface ITouchInputDispatcher<TTouchType extends TouchType, TTouchEventEmitterId extends SceneChildIdBase> {
+export interface ITouchInputDispatcher<TTouchEventEmitterId extends SceneChildIdBase> {
 
-	isTouchRegistered(inputDataStorage:TouchInputData<TTouchType>, emitterId?:TTouchEventEmitterId):boolean;
+	isTouchRegistered(inputDataStorage:TouchInputData, emitterId?:TTouchEventEmitterId):boolean;
 
-	registerTouch(inputDataStorage:TouchInputData<TTouchType>, emitterId?:TTouchEventEmitterId):void;
+	registerTouch(inputDataStorage:TouchInputData, emitterId?:TTouchEventEmitterId):void;
 
-	deregisterTouch(inputDataStorage:TouchInputData<TTouchType>, emitterId?:TTouchEventEmitterId):void;
+	deregisterTouch(inputDataStorage:TouchInputData, emitterId?:TTouchEventEmitterId):void;
 }
 
-export type TouchInputManager<TTouchType extends TouchType = TouchType, TTouchEventEmitterId extends SceneChildIdBase = SceneChildIdBase>
+export type TouchInputManager<TTouchEventEmitterId extends SceneChildIdBase = SceneChildIdBase>
 	= GameLoopPhaseActor<typeof GameLoopPhase.INPUT> &
-	  ITouchInputDispatcher<TTouchType, TTouchEventEmitterId> & {
+	  ITouchInputDispatcher<TTouchEventEmitterId> & {
 
 		  unregisterAll():void;
 	  };

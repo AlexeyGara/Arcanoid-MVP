@@ -7,21 +7,21 @@
  * Last modified: 2026-02-18 17:44
  */
 
-import type { ErrorEventsEmitter } from "@core-api/event-types";
 import type {
 	IGameLoopUpdatable,
 	IGameLoopUpdater
-}                                  from "@core-api/gameloop-types";
-import type { ISceneImpl }         from "@core-api/scene-impl-types";
+}                                from "@core-api/gameloop-types";
+import type { ISceneImpl }       from "@core-api/scene-impl-types";
 import type {
 	ISceneHost,
 	IScenesManagerControlled
-}                                  from "@core-api/scene-types";
+}                                from "@core-api/scene-types";
 import type {
 	IResizable,
 	ResizeInfo
-}                                  from "@core-api/service-types";
-import type { CanBeAddToScene }    from "@core-api/view-types";
+}                                from "@core-api/service-types";
+import type { CanBeAddToScene }  from "@core-api/view-types";
+import { SceneAttachPhaseError } from "core/errors/flow/SceneAttachPhaseError";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESceneStatus = {
@@ -64,7 +64,6 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 
 	private readonly _gameLoop:IGameLoopUpdater;
 	private readonly _sceneImpl:ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>;
-	protected readonly errorEmitter:ErrorEventsEmitter;
 	private _status:ESceneStatus = ESceneStatus.NEW;
 
 	protected constructor(
@@ -72,13 +71,11 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 		props:TSceneProps,
 		gameLoop:IGameLoopUpdater,
 		sceneImpl:ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>,
-		errorThrower:ErrorEventsEmitter,
 	) {
-		this.sceneId      = sceneId;
-		this.sceneProps   = props;
-		this._gameLoop    = gameLoop;
-		this._sceneImpl   = sceneImpl;
-		this.errorEmitter = errorThrower;
+		this.sceneId    = sceneId;
+		this.sceneProps = props;
+		this._gameLoop  = gameLoop;
+		this._sceneImpl = sceneImpl;
 	}
 
 	@final
@@ -88,8 +85,8 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 			return;
 		}
 
-		this.errorEmitter.emitFatalErrorEvent(new Error(
-			`[Scene] cannot add view '${view.uniqueOwnId}' to layer '${view.targetLayerId}' of scene '${this.sceneId}'!`));
+		throw new SceneAttachPhaseError(this.sceneId, view.uniqueOwnId,
+										`[Scene] cannot add view '${view.uniqueOwnId}' to layer '${view.targetLayerId}' of scene '${this.sceneId}'!`);
 	}
 
 	@final
@@ -99,11 +96,9 @@ export abstract class Scene<TSceneId extends SceneIdBase,
 			return;
 		}
 
-		//this._errorThrower.throwFatalErrorEvent(new Error(
 		logger.warn(
 			`[Scene] cannot remove view '${view.uniqueOwnId}' from layer '${view.targetLayerId}' of scene '${this.sceneId}'!`
 		);
-		//);
 
 		this._sceneImpl.removeFromParent(view.uniqueOwnId);
 	}

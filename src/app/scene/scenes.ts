@@ -18,6 +18,7 @@ export const AppSceneID = {
 } as const;
 
 export type AppSceneID = typeof AppSceneID[keyof typeof AppSceneID];
+export type AppSceneID2 = typeof AppSceneID[keyof typeof AppSceneID];
 
 export const AppSceneLayers = {
 	[AppSceneID.MENU]:     ["background", "title", "ui", "service"],
@@ -38,6 +39,8 @@ export const AppRootLayers = {
 	APP_MAIN_LEVEL:       ['app-common-layer', 1],
 	APP_BACKGROUND_LEVEL: ['app-background-layer', 0],
 } as const;
+
+export const AppRootLayersOrdered = Object.values(AppRootLayers).sort((a, b) => a[1] - b[1]).map(v => v[0]);
 
 export type AppRootLayers = typeof AppRootLayers[keyof typeof AppRootLayers];
 

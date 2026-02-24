@@ -6,22 +6,25 @@
  * All rights reserved.
  */
 
+import { PixiAssets } from "@pixi/index";
 import type {
 	AssetUniqueAlias,
 	IAssetsLoader,
 	LoadableAsset
-}                 from "@platform/engine/assets";
-import { Assets } from "pixi.js";
+}                     from "@platform/engine/assets";
 
 export class PixiAssetsLoader implements IAssetsLoader {
 
 	isLoaded(assetUid:AssetUniqueAlias):boolean {
-		return Assets.cache.has(Symbol.keyFor(assetUid)!);
+		return PixiAssets.cache.has(Symbol.keyFor(assetUid)!);
 	}
 
 	async load(asset:LoadableAsset):Promise<boolean> {
 		try {
-			const result = await Assets.load(asset.source);
+			const result = await PixiAssets.load({
+													 alias: Symbol.keyFor(asset.alias),
+													 src:   asset.source
+												 });
 			if(result) {
 				return true;
 			}
@@ -36,6 +39,6 @@ export class PixiAssetsLoader implements IAssetsLoader {
 	}
 
 	async unload(assetUid:AssetUniqueAlias):Promise<void> {
-		await Assets.unload(Symbol.keyFor(assetUid)!);
+		await PixiAssets.unload(Symbol.keyFor(assetUid)!);
 	}
 }

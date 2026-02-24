@@ -8,25 +8,18 @@
  */
 
 import type { IViewsHolderImpl } from "@core-api/scene-impl-types";
-import type { IScenesFactory }   from "@core-api/scene-types";
 import type { IResizeManager }   from "@core-api/service-types";
+import type { AppScenesFactory } from "app/scene/AppScenesFactory";
 import type {
 	AppRootLayersId,
-	AppSceneID,
-	AppSceneLayersIds,
-	AppSceneProps
+	AppSceneID
 }                                from "app/scene/scenes";
 import { SceneManager }          from "core/scene/SceneManager";
 
-export class AppSceneManager extends SceneManager<AppSceneID, AppSceneProps<AppSceneID>, AppSceneLayersIds<AppSceneID>, SceneChildIdBase, AppRootLayersId> {
+export type AppSceneManager = SceneManager<AppSceneID, AppRootLayersId>;
 
-	constructor(
-		factory:IScenesFactory<AppSceneID, AppSceneProps<AppSceneID>, AppRootLayersId, AppSceneLayersIds<AppSceneID>, SceneChildIdBase>,
-		rootContainerImpl:IViewsHolderImpl<AppRootLayersId, AppSceneID>,
-		resizeManager:IResizeManager
-	) {
-		super(factory,
-			  rootContainerImpl,
-			  resizeManager);
-	}
-}
+export const AppSceneManager = SceneManager as new (
+	scenesFactory:AppScenesFactory,
+	rootContainerImpl:IViewsHolderImpl<AppRootLayersId, AppSceneID>,
+	resizeManager:IResizeManager,
+) => AppSceneManager;

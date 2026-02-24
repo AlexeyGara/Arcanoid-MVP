@@ -13,11 +13,11 @@ type KeyEventName = "keydown" | "keyup";
 
 // For a known keycodes @see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values
 
-export class BrowserKeyInputManager<TKeyEventEmitterId extends SceneChildIdBase>
-	extends KeyInputManagerBase<string, KeyEventName, TKeyEventEmitterId> {
+const keyDownEventName = "keydown";
+const keyUpEventName   = "keyup";
 
-	protected readonly keyDownEventName = "keydown";
-	protected readonly keyUpEventName   = "keyup";
+export class BrowserKeyInputManager<TKeyEventEmitterId extends SceneChildIdBase>
+	extends KeyInputManagerBase<TKeyEventEmitterId> {
 
 	private readonly _defaultTarget:EventTarget;
 	private readonly _emittersProvider:(emitterId:TKeyEventEmitterId) => EventTarget;
@@ -32,9 +32,20 @@ export class BrowserKeyInputManager<TKeyEventEmitterId extends SceneChildIdBase>
 		this._emittersProvider = emittersProvider;
 	}
 
-	protected doRegistration(eventName:KeyEventName, keyCode:string,
-							 emitterId:TKeyEventEmitterId | undefined,
-							 handleCallback:() => void):() => void {
+	protected doRegistrationKeyDown(keyCode:string, emitterId:TKeyEventEmitterId | undefined,
+									handleCallback:() => void):() => void {
+
+		return this._doRegistrationKeyUp(keyDownEventName, keyCode, emitterId, handleCallback);
+	}
+
+	protected doRegistrationKeyUp(keyCode:string, emitterId:TKeyEventEmitterId | undefined,
+								  handleCallback:() => void):() => void {
+
+		return this._doRegistrationKeyUp(keyUpEventName, keyCode, emitterId, handleCallback);
+	}
+
+	private _doRegistrationKeyUp(eventName:KeyEventName, keyCode:string, emitterId:TKeyEventEmitterId | undefined,
+								 handleCallback:() => void):() => void {
 
 		const emitter = emitterId === undefined
 						? this._defaultTarget
@@ -43,7 +54,7 @@ export class BrowserKeyInputManager<TKeyEventEmitterId extends SceneChildIdBase>
 		const keyboardEventHandler = (e:Event):void => {
 			const keyEvent = e as KeyboardEvent;
 
-			if(e.type == this.keyDownEventName && !keyEvent.repeat && keyEvent.code == keyCode) {
+			if(e.type == eventName && !keyEvent.repeat && keyEvent.code == keyCode) {
 				handleCallback();
 			}
 		};

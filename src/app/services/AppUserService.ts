@@ -21,11 +21,15 @@ export class AppUserService
 			   IUserProgressLoader {
 
 	loadUserProgress():Promise<UserProgressData> {
-		return Promise.resolve(undefined);
+		//TODO: implements
+		return Promise.resolve(['UserProfileDTO', 'StoredGameProcessKey']);
 	}
 
 	saveUserProgress(userProfileJson:UserProfileDTO, storedGameProcessKey:StoredGameProcessKey):Promise<void> {
-		return Promise.resolve(undefined);
+		//TODO: implements
+		logger.log(userProfileJson);
+		logger.log(storedGameProcessKey);
+		return Promise.resolve();
 	}
 
 }

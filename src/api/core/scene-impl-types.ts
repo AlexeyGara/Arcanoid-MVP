@@ -19,7 +19,9 @@ export interface IViewsHolderImpl<TSceneLayersId extends SceneLayersIdBase, TSce
 	removeFromParent(childId:TSceneChildId):void;
 }
 
-export interface ISceneImpl<TSceneId extends SceneIdBase, TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>
+export interface ISceneImpl<TSceneId extends SceneIdBase,
+	TSceneLayersId extends SceneLayersIdBase = SceneLayersIdBase,
+	TSceneChildId extends SceneChildIdBase = SceneChildIdBase>
 	extends IViewsHolderImpl<TSceneLayersId, TSceneChildId>,
 			HaveInteraction {
 
@@ -40,7 +42,10 @@ export interface ISceneImpl<TSceneId extends SceneIdBase, TSceneLayersId extends
 
 export interface ISceneImplFactory<TSceneId extends SceneIdBase> {
 
-	createImpl<TSceneLayersId extends SceneLayersIdBase, TSceneChildId extends SceneChildIdBase>(
+	createImpl<TSceneLayersId extends SceneLayersIdBase,
+		TSceneChildId extends SceneChildIdBase>(
 		sceneId:TSceneId
-	):ISceneImpl<TSceneId, TSceneLayersId, TSceneChildId>;
+	):ISceneImpl<TSceneId,
+		TSceneLayersId,
+		TSceneChildId>;
 }

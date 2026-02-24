@@ -1,0 +1,16 @@
+[
+  {
+    "name": "(set_a_custom_asset_name)",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "atlas-1@800x620.webp",
+      "image/png": "atlas-1@800x620.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "sheet-1-webp-[LOCALE]-@800x620.json",
+      "image/png": "sheet-1-png-[LOCALE]-@800x620.json"
+    },
+    "texture_name": "sprite_texture_id_at_sheet",
+    "shared": true
+  }
+]

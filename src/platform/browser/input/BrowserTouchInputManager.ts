@@ -8,15 +8,14 @@
  */
 
 import { getDPR }                from "@browser/index";
+import type { TouchType }        from "@core-api/input-types";
 import { InteractEventType }     from "@platform/engine/interraction";
 import { TouchInputManagerBase } from "core/input/TouchInputManagerBase";
-
-type TouchTypeName = "pointer";
 
 // For a known pointer types @see https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events
 
 export class BrowserTouchInputManager<TTouchEventEmitterId extends SceneChildIdBase>
-	extends TouchInputManagerBase<TouchTypeName, TTouchEventEmitterId> {
+	extends TouchInputManagerBase<TTouchEventEmitterId> {
 
 	private readonly _dpr:number;
 	private readonly _defaultTarget:EventTarget;
@@ -34,7 +33,7 @@ export class BrowserTouchInputManager<TTouchEventEmitterId extends SceneChildIdB
 		this._emittersProvider = emittersProvider;
 	}
 
-	protected doRegistration(touchPhase:"start" | "move" | "end", touchType:TouchTypeName,
+	protected doRegistration(touchPhase:"start" | "move" | "end", touchType:TouchType,
 							 emitterId:TTouchEventEmitterId | undefined,
 							 handleCallback:(posX:number, posY:number) => void):() => void {
 

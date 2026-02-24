@@ -21,19 +21,18 @@ import type {
 import type { AppSystem }    from "@core-api/system-types";
 import { GameLoopPhase }     from "core/gameloop/GameLoopPhase";
 
-type StorageData<TTouchType extends TouchType, TTouchEventEmitterId extends SceneChildIdBase>
-	= Required<TouchInputData<TTouchType>>
+type StorageData<TTouchEventEmitterId extends SceneChildIdBase>
+	= Required<TouchInputData>
 	  & {
-		  target:TouchInputData<TTouchType>;
+		  target:TouchInputData;
 		  subscribes:Map<TTouchEventEmitterId | typeof notSetEventEmitter, Set<() => void>>;
 	  };
 
 const notSetEventEmitter = {};
 
-export abstract class TouchInputManagerBase<TTouchType extends TouchType,
-	TTouchEventEmitterId extends SceneChildIdBase>
+export abstract class TouchInputManagerBase<TTouchEventEmitterId extends SceneChildIdBase>
 
-	implements ITouchInputDispatcher<TTouchType, TTouchEventEmitterId>,
+	implements ITouchInputDispatcher<TTouchEventEmitterId>,
 			   GameLoopPhaseActor<typeof GameLoopPhase.INPUT>,
 			   IGameLoopUpdatable,
 			   AppSystem,
@@ -49,9 +48,9 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 
 	readonly paused:boolean = false;
 
-	private readonly _storage:StorageData<TTouchType, TTouchEventEmitterId>[]  = [];
-	private readonly _map:Map<TouchInputData<TTouchType>, number>              = new Map();
-	private readonly _dirty:Set<StorageData<TTouchType, TTouchEventEmitterId>> = new Set();
+	private readonly _storage:StorageData<TTouchEventEmitterId>[]  = [];
+	private readonly _map:Map<TouchInputData, number>              = new Map();
+	private readonly _dirty:Set<StorageData<TTouchEventEmitterId>> = new Set();
 
 	protected constructor(
 		name:string
@@ -70,7 +69,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 	}
 
 	@final
-	isTouchRegistered(inputDataStorage:TouchInputData<TTouchType>, emitterId?:TTouchEventEmitterId):boolean {
+	isTouchRegistered(inputDataStorage:TouchInputData, emitterId?:TTouchEventEmitterId):boolean {
 		if(this.destroyed) {
 			return false;
 		}
@@ -92,7 +91,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 	}
 
 	@final
-	registerTouch(inputDataStorage:TouchInputData<TTouchType>, emitterId?:TTouchEventEmitterId):void {
+	registerTouch(inputDataStorage:TouchInputData, emitterId?:TTouchEventEmitterId):void {
 		if(this.destroyed) {
 			return;
 		}
@@ -138,12 +137,12 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 	}
 
 	protected abstract doRegistration(touchPhase:"start" | "move" | "end",
-									  touchType:TTouchType,
+									  touchType:TouchType,
 									  emitterId:TTouchEventEmitterId | undefined,
 									  handleCallback:(posX:number, posY:number) => void):() => void;
 
 	@final
-	deregisterTouch(inputDataStorage:TouchInputData<TTouchType>, emitterId?:TTouchEventEmitterId):void {
+	deregisterTouch(inputDataStorage:TouchInputData, emitterId?:TTouchEventEmitterId):void {
 		if(this.destroyed) {
 			return;
 		}
@@ -197,8 +196,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 		this._storage.length = 0;
 	}
 
-	private _onTouchStartHandler(storageData:StorageData<TTouchType, TTouchEventEmitterId>,
-								 posX:number, posY:number):void {
+	private _onTouchStartHandler(storageData:StorageData<TTouchEventEmitterId>, posX:number, posY:number):void {
 
 		this._dirty.add(storageData);
 
@@ -220,8 +218,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 		}
 	}
 
-	private _onTouchMoveHandler(storageData:StorageData<TTouchType, TTouchEventEmitterId>,
-								posX:number, posY:number):void {
+	private _onTouchMoveHandler(storageData:StorageData<TTouchEventEmitterId>, posX:number, posY:number):void {
 		if(this.paused) {
 			return;
 		}
@@ -232,8 +229,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 		storageData.currY = posY;
 	}
 
-	private _onTouchEndtHandler(storageData:StorageData<TTouchType, TTouchEventEmitterId>,
-								posX:number, posY:number):void {
+	private _onTouchEndtHandler(storageData:StorageData<TTouchEventEmitterId>, posX:number, posY:number):void {
 
 		this._dirty.add(storageData);
 
@@ -282,7 +278,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 
 	protected doDestroy?():void;
 
-	private _getStorageData(inputDataStorage:TouchInputData<TTouchType>):StorageData<TTouchType, TTouchEventEmitterId> | undefined {
+	private _getStorageData(inputDataStorage:TouchInputData):StorageData<TTouchEventEmitterId> | undefined {
 
 		const storageIndex = this._map.get(inputDataStorage);
 		if(storageIndex === undefined) {
@@ -297,7 +293,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 		return storageData;
 	}
 
-	private _createStorageData(inputDataStorage:TouchInputData<TTouchType>):StorageData<TTouchType, TTouchEventEmitterId> {
+	private _createStorageData(inputDataStorage:TouchInputData):StorageData<TTouchEventEmitterId> {
 
 		return {
 			touchType: inputDataStorage.touchType,
@@ -317,8 +313,7 @@ export abstract class TouchInputManagerBase<TTouchType extends TouchType,
 		};
 	}
 
-	private _alignLocalToTarget(localInput:StorageData<TTouchType, TTouchEventEmitterId>,
-								targetInput:TouchInputData<TTouchType>):void {
+	private _alignLocalToTarget(localInput:StorageData<TTouchEventEmitterId>, targetInput:TouchInputData):void {
 
 		if(targetInput.isContinue !== undefined) {
 			targetInput.isContinue = localInput.isContinue;

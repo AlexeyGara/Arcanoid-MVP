@@ -1,0 +1,15 @@
+[
+  {
+    "name": "nameId",
+    "alias": "[do_not_set_manually]",
+    "src": {
+      "image/webp": "WEBP-file-source.webp",
+      "image/png": "PNG-file-source.png"
+    },
+    "sprite_sheet": {
+      "image/webp": "sheet-1-webp-[LOCALE]-@800x620.json",
+      "image/png": "sheet-1-png-[LOCALE]-@800x620.json"
+    },
+    "shared": false
+  }
+]

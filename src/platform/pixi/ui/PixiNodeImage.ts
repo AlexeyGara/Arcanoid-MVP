@@ -6,10 +6,10 @@
  * Last modified: 2026-01-13 23:38
  */
 
-import type { SceneResourceType }     from "@platform/engine/resources";
-import { SpriteResName }              from "@platform/engine/resources";
-import { PixiNode }                   from "@platform/pixi/ui/PixiNode";
-import type { Sprite as PixiSprite, } from "pixi.js";
+import type { PixiSprite }        from "@pixi/index";
+import type { SceneResourceType } from "@platform/engine/resources";
+import { SpriteResName }          from "@platform/engine/resources";
+import { PixiNode }               from "@platform/pixi/ui/PixiNode";
 
 export class PixiNodeImage
 	extends PixiNode {

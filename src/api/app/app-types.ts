@@ -12,21 +12,26 @@ import type {
 	MusicPlayer
 }                              from "@core-api/audio-types";
 import type {
-	KeyCode,
 	KeyInputManager,
-	TouchInputManager,
-	TouchType
+	TouchInputManager
 }                              from "@core-api/input-types";
+import type { IScenesManager } from "@core-api/scene-types";
 import type { IResizeManager } from "@core-api/service-types";
 import type {
 	IPauseManager,
 	SystemsProvider
 }                              from "@core-api/system-types";
+import type { AppSceneID }     from "app/scene/scenes";
+import type { AppGameService } from "services/AppGameService";
+import type { AppUserService } from "services/AppUserService";
 
-export type AppContext<TKeyCode extends KeyCode,
-	TTouchType extends TouchType,
-	TInputEventEmitterType>
-	= Readonly<{
+export type AppContext = Readonly<{
+
+	scenes:{
+		sceneManager:{
+			readonly provide:() => IScenesManager<AppSceneID>;
+		};
+	};
 
 	audio:{
 		globalAudioVoice:IVolumeManager;
@@ -40,19 +45,17 @@ export type AppContext<TKeyCode extends KeyCode,
 		keyInput:{
 			readonly provide:<TSceneChildrenId extends SceneChildIdBase>(
 				setName:string,
-				emittersProvider:(emitterId:TSceneChildrenId) => TInputEventEmitterType,
 				pauseManager?:IPauseManager
 			) => [
-				KeyInputManager<TKeyCode, TSceneChildrenId>, () => void
+				KeyInputManager<TSceneChildrenId>, () => void
 			];
 		};
 		touchInput:{
 			readonly provide:<TSceneChildrenId extends SceneChildIdBase>(
 				setName:string,
-				emittersProvider:(emitterId:TSceneChildrenId) => TInputEventEmitterType,
 				pauseManager?:IPauseManager
 			) => [
-				TouchInputManager<TTouchType, TSceneChildrenId>, () => void
+				TouchInputManager<TSceneChildrenId>, () => void
 			];
 		};
 		actions:SystemsProvider['actionsManager'];
@@ -63,6 +66,8 @@ export type AppContext<TKeyCode extends KeyCode,
 
 	services:{
 		resize:Pick<IResizeManager, 'addListener' | 'removeListener'>;
+		user:AppUserService;
+		game:AppGameService;
 	};
 
 }>;

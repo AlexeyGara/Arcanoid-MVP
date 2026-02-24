@@ -1,20 +1,20 @@
-import { InteractMode }               from "@platform/engine/interraction";
-import type { SceneResourceType }     from "@platform/engine/resources";
-import { ContainerResName }           from "@platform/engine/resources";
+import type {
+	ObservablePoint,
+	PixiBounds,
+	PixiContainer
+}                                 from "@pixi/index";
+import { PixiRectangle }          from "@pixi/index";
+import { InteractMode }           from "@platform/engine/interraction";
+import type { SceneResourceType } from "@platform/engine/resources";
+import { ContainerResName }       from "@platform/engine/resources";
 import type {
 	IDisposableNode,
 	IHaveChildrenNodeUI,
 	IInteractiveNodeUI,
 	INodeUI,
 	IResizableNodeUI
-}                 from "@platform/engine/ui/nodes";
-import { NodeUI } from "@platform/engine/ui/nodes/NodeUI";
-import type {
-	Bounds as PixiBounds,
-	Container as PixiContainer,
-	ObservablePoint
-}                 from "pixi.js";
-import { Rectangle as PixiRectangle } from "pixi.js";
+}                                 from "@platform/engine/ui/nodes";
+import { NodeUI }                 from "@platform/engine/ui/nodes/NodeUI";
 
 export function setContainerId(container:PixiContainer, id:string):void {
 	container.name = id;

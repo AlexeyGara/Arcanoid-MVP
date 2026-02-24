@@ -23,8 +23,12 @@ import type {
 	IPauseManager,
 	SystemsProvider
 }                                   from "@core-api/system-types";
+import { PixiSceneImplFactory }     from "@pixi/impl/app/PixiSceneImplFactory";
 import { AppFlowController }        from "app/flow/AppFlowController";
 import { AppStateMachine }          from "app/flow/AppStateMachine";
+import { AppSceneManager }          from "app/scene/AppSceneManager";
+import { AppScenesFactory }         from "app/scene/AppScenesFactory";
+import type { AppSceneID }          from "app/scene/scenes";
 import { AppStatesFactory }         from "app/state/AppStatesFactory";
 import {
 	isAppSystem,
@@ -43,8 +47,6 @@ import { PauseManager }             from "core/systems/PauseManager";
 import { AppGameService }           from "services/AppGameService";
 import { AppUserService }           from "services/AppUserService";
 import { PlatformBrowserPixi }      from "./PlatformBrowserPixi";
-
-type AppContextPlatformed = AppContext<string, "pointer", EventTarget>;
 
 const USE_DPR                  = true;
 const DEFAULT_KEY_INPUT_TARGET = window;
@@ -77,36 +79,56 @@ export class Bootstrap {
 
 		// instancing
 		const rootPauseManager
-				  = new PauseManager(`GLOBAL: Pause manager`);
+						  = new PauseManager(`GLOBAL: Pause manager`);
 		const resizeManager
-				  = new ResizeManager(this._originAssetsSize,
-									  this._viewSizeProvider,
-									  this._onResizeForwarder);
+						  = new ResizeManager(this._originAssetsSize,
+											  this._viewSizeProvider,
+											  this._onResizeForwarder);
 		const gameLoop
-				  = new GameLoop();
+						  = new GameLoop();
 		const appEventBus
-				  = new EventBus();
+						  = new EventBus();
 		const globalAudioVoice
-				  = new AudioVoice('GLOBAL: Audio Voice');
+						  = new AudioVoice('GLOBAL: Audio Voice');
 		const globalMusicVolumeControl
-				  = new AudioVoice('GLOBAL: Music Volume', globalAudioVoice);
+						  = new AudioVoice('GLOBAL: Music Volume', globalAudioVoice);
 		const globalSoundsVolumeControl
-				  = new AudioVoice('GLOBAL: Sounds Volume', globalAudioVoice);
+						  = new AudioVoice('GLOBAL: Sounds Volume', globalAudioVoice);
 		const audioPlayerProvider
-				  = PlatformBrowserPixi.provideAudioPlayer;
+						  = PlatformBrowserPixi.provideAudioPlayer;
 		const globalMusicManager
-				  = new MusicManager('GLOBAL: Music Manager', globalMusicVolumeControl,
-									 audioPlayerProvider(),
-									 (musicAlias, completed) => {
-										 void appEventBus.emit('APP.MUSIC.ENDED',
-															   { musicAlias, completed });
-									 },
-									 () => {
-										 void appEventBus.emit('APP.MUSIC.STOPPED', void 0);
-									 });
+						  = new MusicManager('GLOBAL: Music Manager', globalMusicVolumeControl,
+											 audioPlayerProvider(),
+											 (musicAlias, completed) => {
+												 void appEventBus.emit('APP.MUSIC.ENDED',
+																	   { musicAlias, completed });
+											 },
+											 () => {
+												 void appEventBus.emit('APP.MUSIC.STOPPED', void 0);
+											 });
+		const userService = new AppUserService();
+		const gameService = new AppGameService();
+
+		const sceneImplsFactory = new PixiSceneImplFactory(null,
+														   null);
 
 		// application context
-		const appContext:AppContextPlatformed = {
+		const appContext:AppContext = {
+
+			scenes: {
+				sceneManager: {
+					provide: () => {
+						return new AppSceneManager(
+							new AppScenesFactory(
+								gameLoop,
+								(sceneId:AppSceneID) => sceneImplsFactory.createImpl(sceneId)
+							),
+							PlatformBrowserPixi.provideRootStageImpl(),
+							resizeManager
+						);
+					}
+				}
+			},
 
 			audio: {
 				globalAudioVoice: globalAudioVoice,
@@ -127,7 +149,9 @@ export class Bootstrap {
 			},
 
 			services: {
-				resize: resizeManager
+				resize: resizeManager,
+				user:   userService,
+				game:   gameService
 			}
 		};
 
@@ -146,8 +170,8 @@ export class Bootstrap {
 		const appFlowControl = new AppFlowController(appEventBus,
 													 new AppStateMachine(appContext),
 													 new AppStatesFactory(appContext),
-													 new AppUserService(),
-													 new AppGameService(),
+													 userService,
+													 gameService,
 													 appContext);
 		await appFlowControl.start();
 	}
@@ -170,12 +194,12 @@ const providePauseManager = (rootPauseManager:IPauseManager):SystemsProvider['pa
 
 const provideKeyInputManager = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
 								releaseMethod:(instance:object, pauseManager:IPauseManager) => void
-):AppContextPlatformed['systems']['keyInput'] => ({
+):AppContext['systems']['keyInput'] => ({
 	provide<TSceneChildrenId extends SceneChildIdBase>(
 		setName:string,
 		emittersProvider:(emitterId:TSceneChildrenId) => EventTarget,
 		pauseManager?:IPauseManager
-	):ReturnType<AppContextPlatformed['systems']['keyInput']['provide']> {
+	):ReturnType<AppContext['systems']['keyInput']['provide']> {
 		pauseManager ||= rootPauseManager;
 		const keyInput = new BrowserKeyInputManager(setName, emittersProvider, DEFAULT_KEY_INPUT_TARGET);
 		// input phase: add
@@ -191,12 +215,12 @@ const provideKeyInputManager = (gameLoop:GameLoop, rootPauseManager:IPauseManage
 
 const provideTouchInputManager = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
 								  releaseMethod:(instance:object, pauseManager:IPauseManager) => void
-):AppContextPlatformed['systems']['touchInput'] => ({
+):AppContext['systems']['touchInput'] => ({
 	provide<TSceneChildrenId extends SceneChildIdBase>(
 		setName:string,
 		emittersProvider:(emitterId:TSceneChildrenId) => EventTarget,
 		pauseManager?:IPauseManager
-	):ReturnType<AppContextPlatformed['systems']['touchInput']['provide']> {
+	):ReturnType<AppContext['systems']['touchInput']['provide']> {
 		pauseManager ||= rootPauseManager;
 		const touchInput = new BrowserTouchInputManager(setName, USE_DPR, emittersProvider);
 		// input phase: add
