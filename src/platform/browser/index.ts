@@ -8,6 +8,7 @@
  */
 
 import type {
+	FocusInOutForwarder,
 	ResizeEventForwarder,
 	ViewSizeProvider
 } from "@core-api/service-types";
@@ -16,6 +17,18 @@ export const isBrowser = ():boolean => typeof window !== 'undefined' && typeof w
 
 const RESIZE_DEBOUNCE_TIME = 50;
 let resizeTimer:ReturnType<typeof setTimeout>;
+
+export const focusEventsEmitter:FocusInOutForwarder = (focusInReceiver:() => void, focusOutReceiver:() => void) => {
+	document.addEventListener("visibilitychange", () => {
+		if(document.hidden) {
+			focusOutReceiver();
+		}
+		else {
+			focusInReceiver();
+			// do not forget to 'resume()' AudioContext!
+		}
+	});
+};
 
 export const resizeEventEmitter:ResizeEventForwarder = (receiver:() => void) => {
 	window.addEventListener('resize', () => {

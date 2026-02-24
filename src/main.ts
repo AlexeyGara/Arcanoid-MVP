@@ -8,40 +8,26 @@
  */
 
 import "@_global-init_";
+import { focusEventsEmitter, resizeEventEmitter, viewSizeProvider } from "@browser/index";
+import { Bootstrap } from "./Bootstrap";
 
-import { Application, Assets, Sprite } from "pixi.js";
+const ORIGIN_ASSETS_SIZE 	= {
+	width: 800 as uintMoreZero,
+	height: 600 as uintMoreZero
+};
 
+const appContainer = document.getElementById("pixi-container") as HTMLDivElement;
 
 void (async ():Promise<void> => {
-  // Create a new application
-  const app = new Application();
 
-  // Initialize the application
-  await app.init({ background: "#1099bb", resizeTo: window });
+	const bootstrap = new Bootstrap(
+		ORIGIN_ASSETS_SIZE,
+		appContainer,
+		focusEventsEmitter,
+		resizeEventEmitter,
+		viewSizeProvider
+	);
 
-  // Append the application canvas to the document body
-  document.getElementById("pixi-container")!.appendChild(app.canvas);
+	await bootstrap.start();
 
-  // Load the bunny texture
-  const texture = await Assets.load("/assets/bunny.png");
-
-  // Create a bunny Sprite
-  const bunny = new Sprite(texture);
-
-  // Center the sprite's anchor point
-  bunny.anchor.set(0.5);
-
-  // Move the sprite to the center of the screen
-  bunny.position.set(app.screen.width / 2, app.screen.height / 2);
-
-  // Add the bunny to the stage
-  app.stage.addChild(bunny);
-
-  // Listen for animate update
-  app.ticker.add((time) => {
-    // Just for fun, let's rotate mr rabbit a little.
-    // * Delta is 1 if running at 100% performance *
-    // * Creates frame-independent transformation *
-    bunny.rotation += 0.1 * time.deltaTime;
-  });
 })();
