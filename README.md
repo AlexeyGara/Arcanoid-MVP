@@ -6,6 +6,11 @@ A minimum viable version of a game application with the "Arcanoid" mechanic.
 > This source code is provided for **review purposes only**. Unauthorized copying, modification, or distribution is strictly prohibited.
 ---
 
+<p align="center">
+   <a href="https://alexeygara.github.io/Blast-Game-MVP/">
+   <img src="./screenshots/menu_screenshot.png" width="600" title="Blast-Game Gameplay Preview">
+</p>
+
 ## Licensing Information
 
 ### Source Code
