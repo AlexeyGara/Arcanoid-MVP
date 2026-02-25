@@ -132,7 +132,7 @@ export abstract class TouchInputManagerBase<TTouchEventEmitterId extends SceneCh
 		unsubscribers.add(
 			this.doRegistration(
 				"end", inputDataStorage.touchType, emitterId,
-				(posX:number, posY:number) => this._onTouchEndtHandler(storageData!, posX, posY))
+				(posX:number, posY:number) => this._onTouchEndHandler(storageData!, posX, posY))
 		);
 	}
 
@@ -229,7 +229,7 @@ export abstract class TouchInputManagerBase<TTouchEventEmitterId extends SceneCh
 		storageData.currY = posY;
 	}
 
-	private _onTouchEndtHandler(storageData:StorageData<TTouchEventEmitterId>, posX:number, posY:number):void {
+	private _onTouchEndHandler(storageData:StorageData<TTouchEventEmitterId>, posX:number, posY:number):void {
 
 		this._dirty.add(storageData);
 

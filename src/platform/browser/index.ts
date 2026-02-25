@@ -21,6 +21,7 @@ let resizeTimer:ReturnType<typeof setTimeout>;
 export const focusEventsEmitter:FocusInOutForwarder = (focusInReceiver:() => void, focusOutReceiver:() => void) => {
 	document.addEventListener("visibilitychange", () => {
 		if(document.hidden) {
+			// check on/off of sounds 'auto-suspend'
 			focusOutReceiver();
 		}
 		else {
