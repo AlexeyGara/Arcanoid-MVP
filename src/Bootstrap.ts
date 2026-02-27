@@ -24,6 +24,7 @@ import type {
 	SystemsProvider
 }                                   from "@core-api/system-types";
 import { PixiSceneImplFactory }     from "@pixi/impl/app/PixiSceneImplFactory";
+import type { AppEvent }            from "app/event/events";
 import { AppFlowController }        from "app/flow/AppFlowController";
 import { AppStateMachine }          from "app/flow/AppStateMachine";
 import { AppSceneManager }          from "app/scene/AppSceneManager";
@@ -37,6 +38,8 @@ import {
 }                                   from "core/core-utils";
 import { EventBus }                 from "core/event/EventBus";
 import { GameLoop }                 from "core/gameloop/GameLoop";
+import { GameLoopPhase }            from "core/gameloop/GameLoopPhase";
+import { UpdateContainer }          from "core/gameloop/UpdateContainer";
 import { ResizeManager }            from "core/services/ResizeManager";
 import { ActionManager }            from "core/systems/action/ActionManager";
 import { AnimationManager }         from "core/systems/animation/AnimationManager";
@@ -84,10 +87,8 @@ export class Bootstrap {
 						  = new ResizeManager(this._originAssetsSize,
 											  this._viewSizeProvider,
 											  this._onResizeForwarder);
-		const gameLoop
-						  = new GameLoop();
 		const appEventBus
-						  = new EventBus();
+						  = new EventBus<AppEvent>();
 		const globalAudioVoice
 						  = new AudioVoice('GLOBAL: Audio Voice');
 		const globalMusicVolumeControl
@@ -111,6 +112,29 @@ export class Bootstrap {
 
 		const sceneImplsFactory = new PixiSceneImplFactory(null,
 														   null);
+
+		const ecsLogicContainer   = new UpdateContainer(GameLoopPhase.LOGIC);
+		const gameEventsContainer = new UpdateContainer(GameLoopPhase.LOGIC);
+
+		const gameLoop = new GameLoop(
+			// input phase [
+			// ]
+
+			// logic phase [
+			appEventBus,
+			gameEventsContainer,
+			ecsLogicContainer,
+			// ]
+
+			// animation phase [
+			// ]
+
+			// audio phase [
+			globalMusicManager,
+			// ]
+
+			// render phase
+		);
 
 		// application context
 		const appContext:AppContext = {
@@ -193,15 +217,19 @@ const providePauseManager = (rootPauseManager:IPauseManager):SystemsProvider['pa
 });
 
 const provideKeyInputManager = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
-								releaseMethod:(instance:object, pauseManager:IPauseManager) => void
+								releaseMethod:(instance:object, pauseManager:IPauseManager) => void,
+								emittersProvider:<TSceneChildrenId extends SceneChildIdBase>(
+									emitterId:TSceneChildrenId
+								) => EventTarget
 ):AppContext['systems']['keyInput'] => ({
 	provide<TSceneChildrenId extends SceneChildIdBase>(
 		setName:string,
-		emittersProvider:(emitterId:TSceneChildrenId) => EventTarget,
 		pauseManager?:IPauseManager
 	):ReturnType<AppContext['systems']['keyInput']['provide']> {
 		pauseManager ||= rootPauseManager;
-		const keyInput = new BrowserKeyInputManager(setName, emittersProvider, DEFAULT_KEY_INPUT_TARGET);
+		const keyInput = new BrowserKeyInputManager<TSceneChildrenId>(setName,
+																	  emittersProvider,
+																	  DEFAULT_KEY_INPUT_TARGET);
 		// input phase: add
 		gameLoop.add(keyInput);
 		pauseManager?.addSystem(keyInput);
@@ -214,15 +242,19 @@ const provideKeyInputManager = (gameLoop:GameLoop, rootPauseManager:IPauseManage
 });
 
 const provideTouchInputManager = (gameLoop:GameLoop, rootPauseManager:IPauseManager,
-								  releaseMethod:(instance:object, pauseManager:IPauseManager) => void
+								  releaseMethod:(instance:object, pauseManager:IPauseManager) => void,
+								  emittersProvider:<TSceneChildrenId extends SceneChildIdBase>(
+									  emitterId:TSceneChildrenId
+								  ) => EventTarget
 ):AppContext['systems']['touchInput'] => ({
 	provide<TSceneChildrenId extends SceneChildIdBase>(
 		setName:string,
-		emittersProvider:(emitterId:TSceneChildrenId) => EventTarget,
 		pauseManager?:IPauseManager
 	):ReturnType<AppContext['systems']['touchInput']['provide']> {
 		pauseManager ||= rootPauseManager;
-		const touchInput = new BrowserTouchInputManager(setName, USE_DPR, emittersProvider);
+		const touchInput = new BrowserTouchInputManager<TSceneChildrenId>(setName,
+																		  USE_DPR,
+																		  emittersProvider);
 		// input phase: add
 		gameLoop.add(touchInput);
 		pauseManager?.addSystem(touchInput);

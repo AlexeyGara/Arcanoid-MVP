@@ -9,21 +9,16 @@
 
 import type { IGameLoopUpdater } from "@core-api/gameloop-types";
 import type {
-	MainMenu_SceneId,
-	MainMenu_SceneImpl,
-	MainMenu_SceneLayerId,
-	MainMenu_SceneProps,
-	MainMenu_SceneTargetRootLayer,
-	MainMenu_SceneViewsId
-}                                from "app/state/types/connecting_types/mainmenu-state-connecting-types";
+	Menu
+}                                from "app/state/types/index";
 import { Scene }                 from "core/scene/SceneBase";
 
 export class MainMenuScene
-	extends Scene<MainMenu_SceneId, MainMenu_SceneProps, MainMenu_SceneTargetRootLayer, MainMenu_SceneLayerId, MainMenu_SceneViewsId> {
+	extends Scene<Menu.SceneId, Menu.SceneProps, Menu.SceneTargetRootLayer, Menu.SceneLayerId, Menu.SceneViewsId> {
 
 	constructor(
 		gameLoop:IGameLoopUpdater,
-		sceneImpl:MainMenu_SceneImpl,
+		sceneImpl:Menu.SceneImpl,
 	) {
 		super("MENU",
 			  {

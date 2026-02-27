@@ -35,16 +35,16 @@ export class BrowserKeyInputManager<TKeyEventEmitterId extends SceneChildIdBase>
 	protected doRegistrationKeyDown(keyCode:string, emitterId:TKeyEventEmitterId | undefined,
 									handleCallback:() => void):() => void {
 
-		return this._doRegistrationKeyUp(keyDownEventName, keyCode, emitterId, handleCallback);
+		return this._doRegistration(keyDownEventName, keyCode, emitterId, handleCallback);
 	}
 
 	protected doRegistrationKeyUp(keyCode:string, emitterId:TKeyEventEmitterId | undefined,
 								  handleCallback:() => void):() => void {
 
-		return this._doRegistrationKeyUp(keyUpEventName, keyCode, emitterId, handleCallback);
+		return this._doRegistration(keyUpEventName, keyCode, emitterId, handleCallback);
 	}
 
-	private _doRegistrationKeyUp(eventName:KeyEventName, keyCode:string, emitterId:TKeyEventEmitterId | undefined,
+	private _doRegistration(eventName:KeyEventName, keyCode:string, emitterId:TKeyEventEmitterId | undefined,
 								 handleCallback:() => void):() => void {
 
 		const emitter = emitterId === undefined

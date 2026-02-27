@@ -5,8 +5,7 @@
     "multiline": {"delimiter": "semi", "requireLast": true}
   }],
 
-  "@typescript-eslint/naming-convention": [
-    "error", {
+  "@typescript-eslint/naming-convention": ["error", {
       "selector": "classProperty",
       "modifiers": ["static", "readonly"],
       "format": ["UPPER_CASE"],
@@ -23,50 +22,56 @@
       "leadingUnderscore": "forbid"
     }, {
       "selector": "variable",
+      "modifiers": ["const", "global"],
+      "format": ["camelCase", "UPPER_CASE"],
+      "leadingUnderscore": "forbid"
+    }, {
+      "selector": "variable",
       "modifiers": ["const", "exported"],
+      "format": ["camelCase", "UPPER_CASE"],
+      "leadingUnderscore": "forbid"
+    }, {
+      "selector": "variable",
+      "modifiers": ["const"],
       "format": ["camelCase", "PascalCase", "UPPER_CASE"],
       "leadingUnderscore": "forbid"
     }, {
       "selector": "variable",
       "format": null,
       "leadingUnderscore": "allow",
-      "filter": { "regex": "^_$", "match": true }
+      "filter": { "regex": "^_+$", "match": true }
     }, {
       "selector": "variable",
       "format": ["camelCase"],
       "leadingUnderscore": "forbid"
-    }
-  ],
+  }],
 
-  "@typescript-eslint/consistent-type-imports": [
-    "error",
-    {
+  "@typescript-eslint/consistent-type-imports": ["error", {
       "prefer": "type-imports",
       "fixStyle": "separate-type-imports"
-    }
-  ],
+  }],
   "@typescript-eslint/explicit-module-boundary-types": "error",
   "@typescript-eslint/explicit-function-return-type": "error",
   "@typescript-eslint/no-unused-vars": ["error", {
-    "argsIgnorePattern": "^_$",
+    "argsIgnorePattern": "^_+$",
     "varsIgnorePattern": "^_$",
     "caughtErrorsIgnorePattern": "^_$"
   }],
-  "@typescript-eslint/explicit-member-accessibility": ["error", { "accessibility": "no-public" }],
+  "@typescript-eslint/explicit-member-accessibility": ["error", {
+    "accessibility": "no-public"
+  }],
 
-  "no-restricted-syntax": [
-    "error", {
+  "no-restricted-syntax": ["error", {
       "selector": "TSEnumDeclaration",
       "message": "Enum usage are deprecated! Use 'export const PascalNamed = { ... } as const' instead. And use type auto-inferring 'export type PascalNamed = typeof PascalNamed[keyof typeof PascalNamed]'."
     }, {
       "selector": "TSMethodSignature[kind='get'], TSMethodSignature[kind='set']",
       "message": "No get/set at interface and types declarations."
-    }
-  ],
+  }],
 
-  "@typescript-eslint/no-misused-promises": [
-    "error", {"checksVoidReturn": true}
-  ],
+  "@typescript-eslint/no-misused-promises": ["error", {
+    "checksVoidReturn": true
+  }],
   "@typescript-eslint/no-floating-promises": "error",
 
   "no-restricted-imports": ["error", {
@@ -75,9 +80,7 @@
       "message": "Not relative '../' imports! Please use alias instead."
     }]
   }],
-  "import/no-restricted-paths": [
-    "error",
-    {
+  "import/no-restricted-paths": ["error", {
       "zones": [{
           "from": "./src/platform",
           "target": "./src/api",
@@ -107,6 +110,5 @@
           "target": "./src/core",
           "message": "Core -> Game dependency are blocked!"
       }]
-    }
-  ]
+  }]
 }

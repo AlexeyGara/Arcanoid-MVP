@@ -40,8 +40,13 @@ export class GameLoop implements IGameLoopUpdater,
 	private _ignoreRenderPhase:boolean = false;
 	private _paused:boolean            = false;
 
-	constructor() {
+	constructor(
+		...updatableList:IGameLoopUpdatable[]
+	) {
 		this._gameTime = new GameTimeImpl(MAX_DELTA_TIME_THRESHOLD);
+		for(const updateTarget of updatableList) {
+			this.add(updateTarget);
+		}
 	}
 
 	init(renderMethod?:RenderMethod):void {
