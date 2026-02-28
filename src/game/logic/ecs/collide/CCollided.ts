@@ -11,11 +11,10 @@ import type { CollidedWithEntity } from "game/logic/ecs";
 
 export class CCollided {
 
-	collidedWith:Set<CollidedWithEntity>;
+	collidedWith?:CollidedWithEntity;
+	collidePos?:Point<number>;
+	collideVertical?:boolean;
 
-	constructor(
-		...collidedWith:CollidedWithEntity[]
-	) {
-		this.collidedWith = new Set(collidedWith);
+	constructor() {
 	}
 }

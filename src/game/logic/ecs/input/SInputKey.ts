@@ -13,9 +13,9 @@ import type {
 	System,
 	World
 }                            from "@releaseband/ecs";
-import { CInputControlled }  from "game/logic/ecs/input/CInputControlled";
+import { CInputControlled }  from "./CInputControlled";
 
-const keyIndex = 1;
+const keyIndex = 0;
 
 export class SInputKey
 

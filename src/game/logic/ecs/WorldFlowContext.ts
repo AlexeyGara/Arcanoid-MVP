@@ -33,6 +33,7 @@ export type WorldFlowContext = {
 
 	gamefield:{
 		collideSectors:CollideSectorsMap;
+		area:Rectangle<number>;
 	};
 
 	systems:{

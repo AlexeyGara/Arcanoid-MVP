@@ -13,14 +13,17 @@ import type {
 	World
 }                     from "@releaseband/ecs";
 import {
+	BLOCK_COLLIDE_ACTIVE_STATE_DURATION_MS,
 	BLOCK_CRITICAL_HEALTH,
-	DEFAULT_BLOCK_HEALTH_DAMAGE
+	DEFAULT_BLOCK_HEALTH_DAMAGE,
+	ViewState
 }                     from "game/logic/ecs";
 import { CBall }      from "game/logic/ecs/bal/CBall";
 import { CCollided }  from "game/logic/ecs/collide/CCollided";
 import { CRigidBody } from "game/logic/ecs/collide/CRigidBody";
-import { CDestroy }   from "game/logic/ecs/health/CDestroy";
-import { CHealth }    from "game/logic/ecs/health/CHealth";
+import { CViewState } from "game/logic/ecs/view/CViewState";
+import { CDestroy }   from "./CDestroy";
+import { CHealth }    from "./CHealth";
 
 export class SHealthProcess
 
@@ -43,9 +46,13 @@ export class SHealthProcess
 		for(const rigid of this._queryHealthyRigid.entities) {
 
 			const cCollide = this._world.getComponent(rigid, CCollided);
-			const cHealth  = this._world.getComponent(rigid, CHealth);
 
-			for(const collideWith of cCollide.collidedWith) {
+			this._world.removeComponent(rigid, CCollided);
+			logger.log(`remove CCollided: from rigid (collide with: '${cCollide.collidedWith}')`);
+
+			const collideWith = cCollide.collidedWith;
+			if(collideWith) {
+				const cHealth = this._world.getComponent(rigid, CHealth);
 
 				if(this._world.hasComponent(collideWith, CBall)) {
 					this._processCollideRigidWithBall(cHealth, rigid);
@@ -59,9 +66,12 @@ export class SHealthProcess
 		for(const ball of this._queryHealthyBall.entities) {
 
 			const cCollide = this._world.getComponent(ball, CCollided);
-			const cHealth  = this._world.getComponent(ball, CHealth);
 
-			for(const collideWith of cCollide.collidedWith) {
+			// do not remove CCollide here - should be removed at Collide Process system
+
+			const collideWith = cCollide.collidedWith;
+			if(collideWith) {
+				const cHealth = this._world.getComponent(ball, CHealth);
 
 				if(this._world.hasComponent(collideWith, CRigidBody)) {
 					this._processCollideBallWithRigid(cHealth/*, ball*/);
@@ -90,6 +100,17 @@ export class SHealthProcess
 				this._world.removeComponent(rigidEntity, CCollided);
 			}
 			this._world.addComponent(rigidEntity, new CDestroy());
+
+			if(this._world.hasComponent(rigidEntity, CViewState)) {
+				const cViewSt           = this._world.getComponent(rigidEntity, CViewState);
+				cViewSt.state           = ViewState.DESTROY;
+				cViewSt.stateDurationMs = -1;
+			}
+		}
+		else if(this._world.hasComponent(rigidEntity, CViewState)) {
+			const cViewSt           = this._world.getComponent(rigidEntity, CViewState);
+			cViewSt.state           = ViewState.ACTIVE;
+			cViewSt.stateDurationMs = BLOCK_COLLIDE_ACTIVE_STATE_DURATION_MS;
 		}
 	}
 

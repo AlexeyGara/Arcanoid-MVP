@@ -28,7 +28,7 @@
     }, {
       "selector": "variable",
       "modifiers": ["const", "exported"],
-      "format": ["camelCase", "UPPER_CASE"],
+      "format": ["camelCase", "UPPER_CASE", "PascalCase"],
       "leadingUnderscore": "forbid"
     }, {
       "selector": "variable",
@@ -75,9 +75,16 @@
   "@typescript-eslint/no-floating-promises": "error",
 
   "no-restricted-imports": ["error", {
+    "paths": [{
+      "name": "pixi.js",
+      "message": "Direct Pixi sub-module imports are blocked!"
+    }],
     "patterns": [{
-      "group": ["../*"],
+      "group": ["../**", ".."],
       "message": "Not relative '../' imports! Please use alias instead."
+    }, {
+      "group": ["pixi.js/*", "@pixi/*"],
+      "message": "Direct Pixi sub-module imports are blocked!"
     }]
   }],
   "import/no-restricted-paths": ["error", {
@@ -109,6 +116,18 @@
           "from": "./src/game",
           "target": "./src/core",
           "message": "Core -> Game dependency are blocked!"
+      }, {
+        "from": "./node_modules/pixi.js",
+        "target": "./src/core",
+        "message": "Core -> Pixi dependency are blocked!"
+      }, {
+        "from": "./node_modules/pixi.js",
+        "target": "./src/game",
+        "message": "Game -> Pixi dependency are blocked!"
+      }, {
+        "from": "./node_modules/pixi.js",
+        "target": "./src/app",
+        "message": "App -> Pixi dependency are blocked!"
       }]
   }]
 }

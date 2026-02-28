@@ -17,7 +17,7 @@ import {
 	DELTA_TIME_MULTIPLIER
 }                           from "game/logic/ecs";
 import { CInputControlled } from "game/logic/ecs/input/CInputControlled";
-import { CVelocity }        from "game/logic/ecs/movement/CVelocity";
+import { CVelocity }        from "./CVelocity";
 
 export class SInputToMove
 
@@ -40,6 +40,8 @@ export class SInputToMove
 			const cVel   = this._world.getComponent(entity, CVelocity);
 
 			const deltaTimeMs = dt * DELTA_TIME_MULTIPLIER;
+
+			cVel.velX = 0;
 
 			if(
 				cInput.movingLeft[0] || cInput.movingLeft[1] ||
